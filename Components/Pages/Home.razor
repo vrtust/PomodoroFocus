@@ -7,24 +7,40 @@
 @inject IFloatingWindowService FloatingWindowService
 @implements IDisposable
 
-<div class="timer-container">
-    <h2 class="timer-phase">@((TimerService.CurrentCycleState == PomodoroCycleState.Work) ? "工作" : "休息")</h2>
-    <h1 class="timer-display">@TimerService.TimeLeft.ToString("mm\\:ss")</h1>
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col justify-center items-center min-h-[80vh] bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-200 hover:shadow-lg">
+        <h2 class="text-4xl font-bold text-primary-600 mb-4 transition-colors duration-200 @(TimerService.CurrentCycleState == PomodoroCycleState.Work ? "animate-pulse" : "")">
+            @((TimerService.CurrentCycleState == PomodoroCycleState.Work) ? "工作" : "休息")
+        </h2>
+        <h1 class="text-6xl sm:text-7xl lg:text-8xl font-light text-gray-800 dark:text-gray-200 mb-8 tracking-wide transition-all duration-300 @(TimerService.IsRunning && TimerService.CurrentCycleState == PomodoroCycleState.Work ? "animate-pulse" : "")">
+            @TimerService.TimeLeft.ToString("mm\\:ss")
+        </h1>
 
-    <div class="button-group">
-        @if (!TimerService.IsRunning)
-        {
-            <button class="btn-start" @onclick="StartTimer">Start</button>
-        }
-        else
-        {
-            <button class="btn-pause" @onclick="PauseTimer">Pause</button>
-            <button class="btn-stop" @onclick="EndPhaseEarly">结束</button>
-        }
+        <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
+            @if (!TimerService.IsRunning)
+            {
+                <button class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95" @onclick="StartTimer">
+                    Start
+                </button>
+            }
+            else
+            {
+                <button class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50 active:scale-95" @onclick="PauseTimer">
+                    Pause
+                </button>
+                <button class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 active:scale-95" @onclick="EndPhaseEarly">
+                    结束
+                </button>
+            }
 
-        <button class="btn-reset" @onclick="ResetTimer">Reset</button>
+            <button class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95" @onclick="ResetTimer">
+                Reset
+            </button>
 
-        <button class="btn btn-secondary" @onclick="ToggleWidget">悬浮窗</button>
+            <button class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 active:scale-95" @onclick="ToggleWidget">
+                悬浮窗
+            </button>
+        </div>
     </div>
 </div>
 <PomodoroLogModal 

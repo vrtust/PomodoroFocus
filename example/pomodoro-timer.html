@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业番茄钟 - 提升专注力的最佳工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: 'var(--primary-50)',
+                            100: 'var(--primary-100)',
+                            200: 'var(--primary-200)',
+                            300: 'var(--primary-300)',
+                            400: 'var(--primary-400)',
+                            500: 'var(--primary-500)',
+                            600: 'var(--primary-600)',
+                            700: 'var(--primary-700)',
+                            800: 'var(--primary-800)',
+                            900: 'var(--primary-900)',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-50: #fef2f2;
+            --primary-100: #fee2e2;
+            --primary-200: #fecaca;
+            --primary-300: #fca5a5;
+            --primary-400: #f87171;
+            --primary-500: #ef4444;
+            --primary-600: #dc2626;
+            --primary-700: #b91c1c;
+            --primary-800: #991b1b;
+            --primary-900: #7f1d1d;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timer-circle {
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377;
+            transition: stroke-dashoffset 1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .dark .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-all duration-500 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <!-- 主容器 -->
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航栏 -->
+        <nav class="w-full px-6 py-4 glass-effect sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">专业番茄钟</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">专注力提升神器</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- 主题切换 -->
+                    <button id="themeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- 设置按钮 -->
+                    <button id="settingsBtn" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要内容区域 -->
+        <div class="flex-1 flex items-center justify-center px-6 py-12">
+            <div class="max-w-6xl w-full grid lg:grid-cols-3 gap-8">
+                <!-- 左侧面板 - 统计信息 -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- 今日统计 -->
+                    <div class="glass-effect rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">今日统计</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">完成番茄</span>
+                                <span id="completedPomodoros" class="text-2xl font-bold text-primary-600 dark:text-primary-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">专注时间</span>
+                                <span id="focusTime" class="text-lg font-semibold text-gray-900 dark:text-white">0分钟</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-400">休息时间</span>
+                                <span id="breakTime" class="text-lg font-semibold text-gray-900 dark:text-white">0分钟</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 目标设定 -->
+                    <div class="glass-effect rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">今日目标</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">目标番茄数</span>
+                                <input id="dailyGoal" type="number" min="1" max="20" value="8" class="w-16 px-2 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-center text-gray-900 dark:text-white border-none outline-none focus:ring-2 focus:ring-primary-500">
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div id="progressBar" class="gradient-bg h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <p id="progressText" class="text-sm text-gray-600 dark:text-gray-400 text-center">0 / 8 完成</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中央面板 - 计时器 -->
+                <div class="lg:col-span-1 flex flex-col items-center">
+                    <!-- 计时器显示 -->
+                    <div class="relative mb-8 floating">
+                        <svg class="w-80 h-80" viewBox="0 0 120 120">
+                            <!-- 背景圆圈 -->
+                            <circle cx="60" cy="60" r="60" stroke="currentColor" stroke-width="2" fill="none" class="text-gray-200 dark:text-gray-700" />
+                            <!-- 进度圆圈 -->
+                            <circle id="progressCircle" cx="60" cy="60" r="60" stroke="currentColor" stroke-width="4" fill="none" class="text-primary-500 timer-circle" />
+                        </svg>
+                        
+                        <!-- 时间显示 -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <div id="timeDisplay" class="text-6xl font-mono font-bold text-gray-900 dark:text-white mb-2">25:00</div>
+                            <div id="sessionType" class="text-lg font-medium text-primary-600 dark:text-primary-400 mb-4">专注时间</div>
+                            <div id="sessionNumber" class="text-sm text-gray-600 dark:text-gray-400">第 1 个番茄</div>
+                        </div>
+                    </div>
+
+                    <!-- 控制按钮 -->
+                    <div class="flex items-center space-x-4 mb-6">
+                        <button id="startBtn" class="px-8 py-4 gradient-bg text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                            开始专注
+                        </button>
+                        <button id="pauseBtn" class="px-6 py-4 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 hidden">
+                            暂停
+                        </button>
+                        <button id="resetBtn" class="px-6 py-4 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                            重置
+                        </button>
+                    </div>
+
+                    <!-- 快速设置 -->
+                    <div class="flex items-center space-x-2">
+                        <button data-time="15" class="quick-time px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary-500 hover:text-white transition-colors">15分</button>
+                        <button data-time="25" class="quick-time px-3 py-2 text-sm bg-primary-500 text-white rounded-lg">25分</button>
+                        <button data-time="45" class="quick-time px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary-500 hover:text-white transition-colors">45分</button>
+                        <button data-time="60" class="quick-time px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-primary-500 hover:text-white transition-colors">60分</button>
+                    </div>
+                </div>
+
+                <!-- 右侧面板 - 任务列表 -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- 当前任务 -->
+                    <div class="glass-effect rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">当前任务</h3>
+                        <input id="currentTask" type="text" placeholder="输入当前专注的任务..." class="w-full px-4 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 border-none outline-none focus:ring-2 focus:ring-primary-500">
+                    </div>
+
+                    <!-- 历史记录 -->
+                    <div class="glass-effect rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">今日完成</h3>
+                        <div id="completedTasks" class="space-y-2 max-h-48 overflow-y-auto">
+                            <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">暂无完成的任务</p>
+                        </div>
+                    </div>
+
+                    <!-- 励志语录 -->
+                    <div class="glass-effect rounded-2xl p-6 premium-shadow">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">每日励志</h3>
+                        <p id="motivationalQuote" class="text-gray-600 dark:text-gray-400 text-sm italic leading-relaxed">"专注是一种超能力。在这个分心的世界里，专注的人将获得不公平的优势。"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 premium-shadow">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">设置</h2>
+                <button id="closeSettings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 时间设置 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">时间设置</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <label class="text-gray-700 dark:text-gray-300">工作时间 (分钟)</label>
+                            <input id="workTime" type="number" min="1" max="120" value="25" class="w-20 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-center border-none outline-none focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="text-gray-700 dark:text-gray-300">短休息 (分钟)</label>
+                            <input id="shortBreak" type="number" min="1" max="30" value="5" class="w-20 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-center border-none outline-none focus:ring-2 focus:ring-primary-500">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="text-gray-700 dark:text-gray-300">长休息 (分钟)</label>
+                            <input id="longBreak" type="number" min="1" max="60" value="15" class="w-20 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-center border-none outline-none focus:ring-2 focus:ring-primary-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 主题色设置 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">主题色</h3>
+                    <div class="grid grid-cols-6 gap-3">
+                        <button class="theme-color w-10 h-10 rounded-lg bg-red-500 hover:ring-4 hover:ring-red-200 transition-all" data-color="red"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-orange-500 hover:ring-4 hover:ring-orange-200 transition-all" data-color="orange"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-yellow-500 hover:ring-4 hover:ring-yellow-200 transition-all" data-color="yellow"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-green-500 hover:ring-4 hover:ring-green-200 transition-all" data-color="green"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-blue-500 hover:ring-4 hover:ring-blue-200 transition-all" data-color="blue"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-purple-500 hover:ring-4 hover:ring-purple-200 transition-all" data-color="purple"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-pink-500 hover:ring-4 hover:ring-pink-200 transition-all" data-color="pink"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-indigo-500 hover:ring-4 hover:ring-indigo-200 transition-all" data-color="indigo"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-teal-500 hover:ring-4 hover:ring-teal-200 transition-all" data-color="teal"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-gray-500 hover:ring-4 hover:ring-gray-200 transition-all" data-color="gray"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-cyan-500 hover:ring-4 hover:ring-cyan-200 transition-all" data-color="cyan"></button>
+                        <button class="theme-color w-10 h-10 rounded-lg bg-emerald-500 hover:ring-4 hover:ring-emerald-200 transition-all" data-color="emerald"></button>
+                    </div>
+                </div>
+
+                <!-- 自动设置 -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">自动化</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center">
+                            <input id="autoStart" type="checkbox" class="rounded text-primary-600 focus:ring-primary-500 focus:ring-offset-0">
+                            <span class="ml-3 text-gray-700 dark:text-gray-300">自动开始下一个会话</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input id="autoBreak" type="checkbox" checked class="rounded text-primary-600 focus:ring-primary-500 focus:ring-offset-0">
+                            <span class="ml-3 text-gray-700 dark:text-gray-300">自动切换到休息时间</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 mt-8">
+                <button id="saveSettings" class="px-6 py-3 gradient-bg text-white font-semibold rounded-lg hover:shadow-lg transition-all">
+                    保存设置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 完成庆祝模态框 -->
+    <div id="celebrationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full mx-4 premium-shadow text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">恭喜完成！</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">您已成功完成一个番茄时间段</p>
+            <button id="closeCelebration" class="px-6 py-3 gradient-bg text-white font-semibold rounded-lg hover:shadow-lg transition-all">
+                继续加油
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 应用状态
+        let timer = {
+            isRunning: false,
+            isPaused: false,
+            currentTime: 25 * 60, // 默认25分钟
+            totalTime: 25 * 60,
+            sessionType: 'work', // work, shortBreak, longBreak
+            sessionCount: 0,
+            completedPomodoros: 0
+        };
+
+        // 设置
+        let settings = {
+            workTime: 25,
+            shortBreak: 5,
+            longBreak: 15,
+            autoStart: false,
+            autoBreak: true,
+            currentTheme: 'red'
+        };
+
+        // DOM 元素
+        const elements = {
+            timeDisplay: document.getElementById('timeDisplay'),
+            sessionType: document.getElementById('sessionType'),
+            sessionNumber: document.getElementById('sessionNumber'),
+            startBtn: document.getElementById('startBtn'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            progressCircle: document.getElementById('progressCircle'),
+            completedPomodoros: document.getElementById('completedPomodoros'),
+            focusTime: document.getElementById('focusTime'),
+            breakTime: document.getElementById('breakTime'),
+            dailyGoal: document.getElementById('dailyGoal'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            currentTask: document.getElementById('currentTask'),
+            completedTasks: document.getElementById('completedTasks'),
+            themeToggle: document.getElementById('themeToggle'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            settingsModal: document.getElementById('settingsModal'),
+            closeSettings: document.getElementById('closeSettings'),
+            celebrationModal: document.getElementById('celebrationModal'),
+            closeCelebration: document.getElementById('closeCelebration')
+        };
+
+        // 励志语录
+        const motivationalQuotes = [
+            "专注是一种超能力。在这个分心的世界里，专注的人将获得不公平的优势。",
+            "成功的秘诀就是把一件事做到极致。",
+            "专注力是成功最重要的原材料。",
+            "深度工作是在认知要求极高的活动上专注而无干扰的努力。",
+            "质量 = 时间 × 专注度",
+            "分心是深度的敌人。",
+            "专注不是抑制分心，而是学会如何不被分心影响。",
+            "真正的效率来自于深度而非多任务。"
+        ];
+
+        // 主题色配置
+        const themeColors = {
+            red: {
+                50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca', 300: '#fca5a5', 400: '#f87171',
+                500: '#ef4444', 600: '#dc2626', 700: '#b91c1c', 800: '#991b1b', 900: '#7f1d1d'
+            },
+            orange: {
+                50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 400: '#fb923c',
+                500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12'
+            },
+            yellow: {
+                50: '#fefce8', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24',
+                500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f'
+            },
+            green: {
+                50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac', 400: '#4ade80',
+                500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d'
+            },
+            blue: {
+                50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa',
+                500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a'
+            },
+            purple: {
+                50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe', 400: '#c084fc',
+                500: '#a855f7', 600: '#9333ea', 700: '#7c3aed', 800: '#6b21a8', 900: '#581c87'
+            },
+            pink: {
+                50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8', 300: '#f9a8d4', 400: '#f472b6',
+                500: '#ec4899', 600: '#db2777', 700: '#be185d', 800: '#9d174d', 900: '#831843'
+            },
+            indigo: {
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8',
+                500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            },
+            teal: {
+                50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf',
+                500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a'
+            },
+            gray: {
+                50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af',
+                500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827'
+            },
+            cyan: {
+                50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9', 400: '#22d3ee',
+                500: '#06b6d4', 600: '#0891b2', 700: '#0e7490', 800: '#155e75', 900: '#164e63'
+            },
+            emerald: {
+                50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399',
+                500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b'
+            }
+        };
+
+        let timerInterval;
+        let statsData = {
+            completedPomodoros: 0,
+            focusTime: 0,
+            breakTime: 0,
+            completedTasks: []
+        };
+
+        // 初始化应用
+        function initApp() {
+            loadSettings();
+            loadStats();
+            updateDisplay();
+            updateStats();
+            setRandomQuote();
+            setupEventListeners();
+            
+            // 检查系统主题偏好
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            elements.startBtn.addEventListener('click', startTimer);
+            elements.pauseBtn.addEventListener('click', pauseTimer);
+            elements.resetBtn.addEventListener('click', resetTimer);
+            elements.themeToggle.addEventListener('click', toggleTheme);
+            elements.settingsBtn.addEventListener('click', openSettings);
+            elements.closeSettings.addEventListener('click', closeSettings);
+            elements.closeCelebration.addEventListener('click', closeCelebration);
+            
+            // 快速时间设置
+            document.querySelectorAll('.quick-time').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const time = parseInt(e.target.dataset.time);
+                    setQuickTime(time);
+                });
+            });
+
+            // 主题色选择
+            document.querySelectorAll('.theme-color').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const color = e.target.dataset.color;
+                    changeThemeColor(color);
+                });
+            });
+
+            // 设置保存
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+
+            // 目标更新
+            elements.dailyGoal.addEventListener('change', updateGoal);
+
+            // 任务输入
+            elements.currentTask.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && timer.sessionType === 'work' && !timer.isRunning) {
+                    startTimer();
+                }
+            });
+
+            // 设置模态框外点击关闭
+            elements.settingsModal.addEventListener('click', (e) => {
+                if (e.target === elements.settingsModal) {
+                    closeSettings();
+                }
+            });
+
+            elements.celebrationModal.addEventListener('click', (e) => {
+                if (e.target === elements.celebrationModal) {
+                    closeCelebration();
+                }
+            });
+        }
+
+        // 计时器功能
+        function startTimer() {
+            if (timer.isPaused) {
+                timer.isPaused = false;
+                timer.isRunning = true;
+            } else {
+                timer.isRunning = true;
+                timer.currentTime = timer.totalTime;
+            }
+
+            elements.startBtn.classList.add('hidden');
+            elements.pauseBtn.classList.remove('hidden');
+
+            timerInterval = setInterval(() => {
+                timer.currentTime--;
+                updateDisplay();
+                updateProgress();
+
+                if (timer.currentTime <= 0) {
+                    completeSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timer.isRunning = false;
+            timer.isPaused = true;
+            clearInterval(timerInterval);
+
+            elements.startBtn.classList.remove('hidden');
+            elements.pauseBtn.classList.add('hidden');
+            elements.startBtn.textContent = '继续';
+        }
+
+        function resetTimer() {
+            timer.isRunning = false;
+            timer.isPaused = false;
+            clearInterval(timerInterval);
+
+            timer.currentTime = timer.totalTime;
+            
+            elements.startBtn.classList.remove('hidden');
+            elements.pauseBtn.classList.add('hidden');
+            elements.startBtn.textContent = timer.sessionType === 'work' ? '开始专注' : '开始休息';
+
+            updateDisplay();
+            updateProgress();
+        }
+
+        function completeSession() {
+            clearInterval(timerInterval);
+            timer.isRunning = false;
+            timer.isPaused = false;
+
+            // 更新统计
+            if (timer.sessionType === 'work') {
+                timer.completedPomodoros++;
+                statsData.completedPomodoros++;
+                statsData.focusTime += settings.workTime;
+                
+                // 添加完成的任务
+                const taskText = elements.currentTask.value.trim();
+                if (taskText) {
+                    addCompletedTask(taskText);
+                    elements.currentTask.value = '';
+                }
+                
+                showCelebration();
+            } else {
+                statsData.breakTime += (timer.sessionType === 'shortBreak' ? settings.shortBreak : settings.longBreak);
+            }
+
+            // 自动切换到下一个会话
+            if (settings.autoBreak) {
+                switchToNextSession();
+            }
+
+            updateStats();
+            saveStats();
+        }
+
+        function switchToNextSession() {
+            if (timer.sessionType === 'work') {
+                timer.sessionCount++;
+                if (timer.sessionCount % 4 === 0) {
+                    setSession('longBreak');
+                } else {
+                    setSession('shortBreak');
+                }
+            } else {
+                setSession('work');
+            }
+
+            if (settings.autoStart) {
+                setTimeout(startTimer, 2000);
+            }
+        }
+
+        function setSession(type) {
+            timer.sessionType = type;
+            
+            switch (type) {
+                case 'work':
+                    timer.totalTime = settings.workTime * 60;
+                    elements.sessionType.textContent = '专注时间';
+                    elements.startBtn.textContent = '开始专注';
+                    break;
+                case 'shortBreak':
+                    timer.totalTime = settings.shortBreak * 60;
+                    elements.sessionType.textContent = '短休息';
+                    elements.startBtn.textContent = '开始休息';
+                    break;
+                case 'longBreak':
+                    timer.totalTime = settings.longBreak * 60;
+                    elements.sessionType.textContent = '长休息';
+                    elements.startBtn.textContent = '开始休息';
+                    break;
+            }
+
+            timer.currentTime = timer.totalTime;
+            resetTimer();
+        }
+
+        // 快速时间设置
+        function setQuickTime(minutes) {
+            if (!timer.isRunning) {
+                timer.totalTime = minutes * 60;
+                timer.currentTime = timer.totalTime;
+                settings.workTime = minutes;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.quick-time').forEach(btn => {
+                    btn.classList.remove('bg-primary-500', 'text-white');
+                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+                });
+                
+                event.target.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+                event.target.classList.add('bg-primary-500', 'text-white');
+                
+                updateDisplay();
+                updateProgress();
+            }
+        }
+
+        // 显示更新
+        function updateDisplay() {
+            const minutes = Math.floor(timer.currentTime / 60);
+            const seconds = timer.currentTime % 60;
+            elements.timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const sessionNum = Math.floor(timer.sessionCount / 2) + 1;
+            elements.sessionNumber.textContent = `第 ${sessionNum} 个番茄`;
+        }
+
+        function updateProgress() {
+            const progress = ((timer.totalTime - timer.currentTime) / timer.totalTime) * 377;
+            elements.progressCircle.style.strokeDashoffset = 377 - progress;
+        }
+
+        function updateStats() {
+            elements.completedPomodoros.textContent = statsData.completedPomodoros;
+            elements.focusTime.textContent = `${statsData.focusTime}分钟`;
+            elements.breakTime.textContent = `${statsData.breakTime}分钟`;
+            
+            // 更新进度条
+            const goal = parseInt(elements.dailyGoal.value);
+            const progress = Math.min((statsData.completedPomodoros / goal) * 100, 100);
+            elements.progressBar.style.width = `${progress}%`;
+            elements.progressText.textContent = `${statsData.completedPomodoros} / ${goal} 完成`;
+        }
+
+        // 主题切换
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // 主题色更改
+        function changeThemeColor(color) {
+            settings.currentTheme = color;
+            const colors = themeColors[color];
+            
+            Object.keys(colors).forEach(shade => {
+                document.documentElement.style.setProperty(`--primary-${shade}`, colors[shade]);
+            });
+            
+            saveSettings();
+        }
+
+        // 设置管理
+        function openSettings() {
+            elements.settingsModal.classList.remove('hidden');
+            
+            // 填充当前设置
+            document.getElementById('workTime').value = settings.workTime;
+            document.getElementById('shortBreak').value = settings.shortBreak;
+            document.getElementById('longBreak').value = settings.longBreak;
+            document.getElementById('autoStart').checked = settings.autoStart;
+            document.getElementById('autoBreak').checked = settings.autoBreak;
+        }
+
+        function closeSettings() {
+            elements.settingsModal.classList.add('hidden');
+        }
+
+        function saveSettings() {
+            settings.workTime = parseInt(document.getElementById('workTime').value);
+            settings.shortBreak = parseInt(document.getElementById('shortBreak').value);
+            settings.longBreak = parseInt(document.getElementById('longBreak').value);
+            settings.autoStart = document.getElementById('autoStart').checked;
+            settings.autoBreak = document.getElementById('autoBreak').checked;
+            
+            // 如果当前是工作状态，更新时间
+            if (timer.sessionType === 'work' && !timer.isRunning) {
+                timer.totalTime = settings.workTime * 60;
+                timer.currentTime = timer.totalTime;
+                updateDisplay();
+                updateProgress();
+            }
+            
+            localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+            closeSettings();
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('pomodoroSettings');
+            if (saved) {
+                settings = { ...settings, ...JSON.parse(saved) };
+            }
+            
+            // 应用主题色
+            changeThemeColor(settings.currentTheme);
+        }
+
+        // 统计数据管理
+        function saveStats() {
+            localStorage.setItem('pomodoroStats', JSON.stringify(statsData));
+        }
+
+        function loadStats() {
+            const saved = localStorage.getItem('pomodoroStats');
+            if (saved) {
+                const data = JSON.parse(saved);
+                // 检查是否是新的一天
+                const today = new Date().toDateString();
+                const lastDate = localStorage.getItem('pomodoroLastDate');
+                
+                if (lastDate !== today) {
+                    // 新的一天，重置统计
+                    statsData = {
+                        completedPomodoros: 0,
+                        focusTime: 0,
+                        breakTime: 0,
+                        completedTasks: []
+                    };
+                    localStorage.setItem('pomodoroLastDate', today);
+                } else {
+                    statsData = data;
+                }
+            }
+            
+            // 显示已完成的任务
+            updateCompletedTasksDisplay();
+        }
+
+        // 任务管理
+        function addCompletedTask(taskText) {
+            const task = {
+                text: taskText,
+                completedAt: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+            };
+            statsData.completedTasks.push(task);
+            updateCompletedTasksDisplay();
+        }
+
+        function updateCompletedTasksDisplay() {
+            if (statsData.completedTasks.length === 0) {
+                elements.completedTasks.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">暂无完成的任务</p>';
+                return;
+            }
+            
+            elements.completedTasks.innerHTML = statsData.completedTasks
+                .slice(-5) // 只显示最近5个任务
+                .reverse()
+                .map(task => `
+                    <div class="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        <span class="text-sm text-gray-900 dark:text-white">${task.text}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${task.completedAt}</span>
+                    </div>
+                `).join('');
+        }
+
+        // 其他功能
+        function updateGoal() {
+            updateStats();
+        }
+
+        function setRandomQuote() {
+            const quote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+            document.getElementById('motivationalQuote').textContent = quote;
+        }
+
+        function showCelebration() {
+            elements.celebrationModal.classList.remove('hidden');
+        }
+
+        function closeCelebration() {
+            elements.celebrationModal.classList.add('hidden');
+        }
+
+        // 启动应用
+        initApp();
+
+        // 每小时更新励志语录
+        setInterval(setRandomQuote, 3600000);
+    </script>
+</body>
+</html>

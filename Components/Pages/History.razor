@@ -5,68 +5,71 @@
 
 @implements IAsyncDisposable
 
-<h3>历史记录</h3>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200">
+        <h3 class="text-4xl font-bold text-primary-600 mb-6 transition-colors duration-200">历史记录</h3>
 
-<!-- 步骤 1: 添加视图切换按钮 -->
-<div class="view-selector btn-group mb-3" role="group">
-    <button type="button" class="btn @(_currentViewMode == ViewMode.All ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.All)">全部</button>
-    <button type="button" class="btn @(_currentViewMode == ViewMode.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Day)">日视图</button>
-    <button type="button" class="btn @(_currentViewMode == ViewMode.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Week)">周视图</button>
-    <button type="button" class="btn @(_currentViewMode == ViewMode.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Month)">月视图</button>
-    <button type="button" class="btn @(_currentViewMode == ViewMode.Year ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Year)">年视图</button>
-</div>
-
-<!-- 步骤 2: 自定义时间范围筛选 -->
-<div class="filter-controls mb-3 p-3 border rounded">
-    <h5 class="mb-3">@_viewTitle</h5>
-    <div class="row align-items-end">
-        <div class="col-md-4">
-            <label for="startDate">开始时间</label>
-            <!-- 升级为 datetime-local -->
-            <input id="startDate" type="datetime-local" class="form-control" @bind="_startDate" />
+        <!-- 步骤 1: 添加视图切换按钮 -->
+        <div class="view-selector flex flex-wrap gap-2 mb-6" role="group">
+            <button type="button" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95 transform hover:-translate-y-0.5 @(_currentViewMode == ViewMode.All ? "btn-primary" : "btn-secondary")" @onclick="() => ChangeViewAsync(ViewMode.All)">全部</button>
+            <button type="button" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95 transform hover:-translate-y-0.5 @(_currentViewMode == ViewMode.Day ? "btn-primary" : "btn-secondary")" @onclick="() => ChangeViewAsync(ViewMode.Day)">日视图</button>
+            <button type="button" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95 transform hover:-translate-y-0.5 @(_currentViewMode == ViewMode.Week ? "btn-primary" : "btn-secondary")" @onclick="() => ChangeViewAsync(ViewMode.Week)">周视图</button>
+            <button type="button" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95 transform hover:-translate-y-0.5 @(_currentViewMode == ViewMode.Month ? "btn-primary" : "btn-secondary")" @onclick="() => ChangeViewAsync(ViewMode.Month)">月视图</button>
+            <button type="button" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95 transform hover:-translate-y-0.5 @(_currentViewMode == ViewMode.Year ? "btn-primary" : "btn-secondary")" @onclick="() => ChangeViewAsync(ViewMode.Year)">年视图</button>
         </div>
-        <div class="col-md-4">
-            <label for="endDate">结束时间</label>
-            <input id="endDate" type="datetime-local" class="form-control" @bind="_endDate" />
-        </div>
-        <div class="col-md-4 d-flex">
-            <button class="btn btn-info w-100" @onclick="ApplyCustomFilterAsync">应用自定义筛选</button>
-        </div>
-    </div>
-</div>
 
-
-@if (sessions == null || !sessions.Any())
-{
-    <p><em>@message</em></p>
-}
-else
-{
-    <div class="chart-container" style="max-width: 500px; margin: auto; min-height: 250px;">
-        <h4>活动分类占比</h4>
-        <canvas id="historyPieChart"></canvas>
-    </div>
-
-    <div class="history-list mt-4">
-        @foreach (var session in sessions.OrderByDescending(s => s.StartTime))
-        {
-            <div class="history-item clickable" @onclick="() => ShowConversationDetails(session)">
-                <div class="item-header">
-                    <span class="item-category">@session.ActivityCategory</span>
-                    <span class="item-timestamp">@session.StartTime.ToString("yyyy-MM-dd HH:mm")</span>
+        <!-- 步骤 2: 自定义时间范围筛选 -->
+        <div class="filter-controls mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-200">
+            <h5 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-200">@_viewTitle</h5>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">开始时间</label>
+                    <input id="startDate" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md" @bind="_startDate" />
                 </div>
-                <div class="item-body">
-                    <p>@session.LLMSummary</p>
+                <div>
+                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">结束时间</label>
+                    <input id="endDate" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:shadow-md" @bind="_endDate" />
                 </div>
-                <div class="item-footer">
-                    <span>
-                        工作: <strong>@session.ActualWorkDurationMinutes</strong> min / 休息: <strong>@session.ActualBreakDurationMinutes</strong> min
-                    </span>
+                <div>
+                    <button class="w-full px-6 py-3 bg-primary hover:bg-secondary text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 active:scale-95" @onclick="ApplyCustomFilterAsync">应用自定义筛选</button>
                 </div>
             </div>
-        }
+        </div>
+
+
+    @if (sessions == null || !sessions.Any())
+    {
+        <p class="text-gray-600 dark:text-gray-400 text-center py-8"><em>@message</em></p>
+    }
+    else
+    {
+        <div class="chart-container mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg" style="max-width: 500px; margin: auto; min-height: 250px;">
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">活动分类占比</h4>
+            <canvas id="historyPieChart"></canvas>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @foreach (var session in sessions.OrderByDescending(s => s.StartTime))
+            {
+                <div class="bg-white dark:bg-gray-700 shadow-md rounded-lg p-4 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" @onclick="() => ShowConversationDetails(session)" tabindex="0">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-full transition-colors duration-200">@session.ActivityCategory</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">@session.StartTime.ToString("yyyy-MM-dd HH:mm")</span>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3 transition-colors duration-200">@session.LLMSummary</p>
+                    </div>
+                    <div class="pt-3 border-t border-gray-200 dark:border-gray-600 transition-colors duration-200">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">
+                            工作: <strong class="text-green-600 dark:text-green-400">@session.ActualWorkDurationMinutes</strong> min / 休息: <strong class="text-blue-600 dark:text-blue-400">@session.ActualBreakDurationMinutes</strong> min
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
     </div>
-}
+</div>
 
 @if (_isHistoryModalVisible)
 {

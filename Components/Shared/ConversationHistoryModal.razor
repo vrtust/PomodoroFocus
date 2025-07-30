@@ -2,20 +2,20 @@
 @using OpenAI.Chat
 @using System.Text.Json
 
-<div class="modal-backdrop show" @onclick="Close">
-    <div class="modal-content" @onclick:stopPropagation="true">
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-all duration-300 ease-out z-50" @onclick="Close">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 transform transition-all duration-300 ease-out scale-100" @onclick:stopPropagation="true">
 
-        <div class="modal-header">
-            <h4>对话记录详情</h4>
-            <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+        <div class="relative">
+            <h4 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100 transition-colors duration-200">对话记录详情</h4>
+            <button type="button" class="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" @onclick="Close" aria-label="Close">✕</button>
         </div>
 
-        <div class="chat-window">
+        <div class="max-h-96 overflow-auto">
             @if (_conversationHistory != null && _conversationHistory.Any())
             {
                 @foreach (var message in _conversationHistory)
                 {
-                    <div class="chat-message @GetMessageClass(message)">
+                    <div class="p-4 mb-2 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors duration-200 @GetMessageClass(message)">
                         @if (message.Content != null && message.Content.Any())
                         {
                             @message.Content[0].Text
@@ -25,12 +25,12 @@
             }
             else
             {
-                <div class="chat-message assistant-message">@_errorMessage</div>
+                <div class="p-4 mb-2 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors duration-200">@_errorMessage</div>
             }
         </div>
 
-        <div class="modal-footer">
-            <button class="btn btn-secondary" @onclick="Close">关闭</button>
+        <div class="mt-4 flex justify-end">
+            <button class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95" @onclick="Close">关闭</button>
         </div>
 
     </div>

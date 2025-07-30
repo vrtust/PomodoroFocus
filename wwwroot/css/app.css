@@ -1,3 +1,17 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100; }
+}
+
+@layer components {
+  .btn-primary { @apply px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95; }
+  .btn-secondary { @apply px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95; }
+  .card { @apply p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1; }
+}
+
 ﻿/* :root 定义了亮色模式的默认变量 */
 :root {
     --background-color: #ffffff; /* 主背景色 */
@@ -189,4 +203,181 @@ button {
 /* 确保暗色模式下也有对应的悬停颜色 */
 html.dark-mode {
     --secondary-background-color-hover: #3a3a3a;
+}
+
+/* 响应式和交互动效增强样式 */
+@layer utilities {
+  /* 自定义动画关键帧 */
+  @keyframes slideInFromLeft {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOutToLeft {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes modalIn {
+    0% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes modalOut {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+  }
+
+  /* 自定义工具类 */
+  .animate-slide-in-left {
+    animation: slideInFromLeft 0.3s ease-out;
+  }
+  
+  .animate-slide-out-left {
+    animation: slideOutToLeft 0.3s ease-out;
+  }
+  
+  .animate-modal-in {
+    animation: modalIn 0.3s ease-out;
+  }
+  
+  .animate-modal-out {
+    animation: modalOut 0.3s ease-out;
+  }
+
+  /* 增强的过渡效果 */
+  .transition-colors-enhanced {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  .transition-transform-enhanced {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  /* 响应式工具类增强 */
+  .responsive-text {
+    @apply text-sm sm:text-base md:text-lg lg:text-xl;
+  }
+  
+  .responsive-padding {
+    @apply p-2 sm:p-4 md:p-6 lg:p-8;
+  }
+  
+  .responsive-margin {
+    @apply m-2 sm:m-4 md:m-6 lg:m-8;
+  }
+
+  /* 交互状态增强 */
+  .interactive-card {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+  
+  .interactive-button {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 active:scale-95 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+  }
+  
+  .interactive-input {
+    @apply transition-all duration-200 hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+}
+
+/* 移动端专用样式优化 */
+@media (max-width: 768px) {
+  .timer-display {
+    font-size: 4rem !important;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .button-group button {
+    width: 100%;
+    min-width: 200px;
+  }
+  
+  /* 移动端模态框优化 */
+  .modal-mobile {
+    @apply mx-2 max-h-[90vh] overflow-y-auto;
+  }
+}
+
+/* 平板端样式优化 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .timer-display {
+    font-size: 6rem !important;
+  }
+}
+
+/* 桌面端大屏幕优化 */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px;
+  }
+  
+  .timer-display {
+    font-size: 8rem !important;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-friendly {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 可访问性增强 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    @apply border-2 border-white;
+  }
+  
+  .card {
+    @apply border-2 border-gray-600;
+  }
 }

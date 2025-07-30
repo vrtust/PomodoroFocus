@@ -1,0 +1,82 @@
+﻿@page "/settings"
+@inject ISettingsService SettingsService
+@inject IThemeService ThemeService
+@inject IJSRuntime JSRuntime
+
+<h3>设置</h3>
+
+@if (settings != null)
+{
+    <div class="settings-form">
+        <div class="form-group">
+            <label>番茄钟时长 (分钟):</label>
+            <input type="number" @bind="settings.PomodoroDuration" />
+        </div>
+        
+        <div class="form-group">
+            <label>OpenAI API Key:</label>
+            <input type="password" @bind="settings.ApiKey" placeholder="sk-..." />
+        </div>
+
+        <div class="form-group">
+            <label>API Base URL (可选):</label>
+            <input type="text" @bind="settings.ApiBaseUrl" placeholder="例如 https://api.openai.com/v1" />
+        </div>
+
+        <div class="form-group">
+            <label>主题:</label>
+            @* 使用 @bind 来双向绑定选择器的值 *@
+            <select @bind="settings.Theme">
+                <option value="System">跟随系统</option>
+                <option value="Light">亮色模式</option>
+                <option value="Dark">暗色模式</option>
+            </select>
+        </div>
+        
+        <button @onclick="Save">保存设置</button>
+        @if(showSaveConfirmation)
+        {
+            <span class="save-confirmation">已保存!</span>
+        }
+    </div>
+}
+else
+{
+    <p>正在加载设置...</p>
+}
+
+
+@code {
+    private AppSettings settings;
+    private bool showSaveConfirmation = false;
+
+    protected override void OnInitialized()
+    {
+        // 创建一个副本进行编辑，以避免在保存前修改全局状态
+        settings = new AppSettings
+        {
+            PomodoroDuration = SettingsService.CurrentSettings.PomodoroDuration,
+            ApiKey = SettingsService.CurrentSettings.ApiKey,
+            ApiBaseUrl = SettingsService.CurrentSettings.ApiBaseUrl,
+            Theme = SettingsService.CurrentSettings.Theme
+        };
+    }
+
+    private async Task Save()
+    {
+        // 将编辑后的设置复制回全局服务
+        SettingsService.CurrentSettings.PomodoroDuration = settings.PomodoroDuration;
+        SettingsService.CurrentSettings.ApiKey = settings.ApiKey;
+        SettingsService.CurrentSettings.ApiBaseUrl = settings.ApiBaseUrl;
+        SettingsService.CurrentSettings.Theme = settings.Theme;
+
+        await SettingsService.SaveSettingsAsync();
+
+        await ThemeService.SetThemeAsync(settings.Theme, JSRuntime);
+
+        showSaveConfirmation = true;
+        await Task.Delay(2000); // 显示 "已保存" 2秒钟
+        showSaveConfirmation = false;
+        StateHasChanged();
+    }
+}

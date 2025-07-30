@@ -1,0 +1,125 @@
+﻿@page "/"
+@using PomodoroFocus.Components.Shared
+@using System.Diagnostics
+@inject IPomodoroTimerService TimerService
+@inject ISettingsService SettingsService
+@inject AppDbContext DbContext
+@inject IFloatingWindowService FloatingWindowService
+@implements IDisposable
+
+<div class="timer-container">
+    <h2 class="timer-phase">@((TimerService.CurrentCycleState == PomodoroCycleState.Work) ? "工作" : "休息")</h2>
+    <h1 class="timer-display">@TimerService.TimeLeft.ToString("mm\\:ss")</h1>
+
+    <div class="button-group">
+        @if (!TimerService.IsRunning)
+        {
+            <button class="btn-start" @onclick="StartTimer">Start</button>
+        }
+        else
+        {
+            <button class="btn-pause" @onclick="PauseTimer">Pause</button>
+            <button class="btn-stop" @onclick="EndPhaseEarly">结束</button>
+        }
+
+        <button class="btn-reset" @onclick="ResetTimer">Reset</button>
+
+        <button class="btn btn-secondary" @onclick="ToggleWidget">悬浮窗</button>
+    </div>
+</div>
+<PomodoroLogModal 
+    IsVisible="isLogModalVisible" 
+    OnClose="@(() => isLogModalVisible = false)"
+    OnComplete="HandleLogCompletion" />
+
+
+@code {
+    private bool isLogModalVisible = false; // 默认不显示，仅在计时结束后显示
+    private PomodoroSession _sessionInProgress; // 用于暂存需要记录日志的会话
+
+    private bool _isWidgetVisible = false;
+
+    protected override void OnInitialized()
+    {
+        TimerService.OnTick += OnTimerTick;
+        TimerService.OnPhaseCompleted += OnPhaseCompleted;
+    }
+
+    private void StartTimer() => TimerService.Start();
+    private void PauseTimer() => TimerService.Pause();
+    private void ResetTimer() => TimerService.Reset();
+    private void EndPhaseEarly() => TimerService.EndPhaseEarly();
+
+    private async void OnTimerTick() => await InvokeAsync(StateHasChanged);
+
+    private async void OnTimerCompleted(PomodoroCycleState completedState)
+    {
+        if (completedState == PomodoroCycleState.Work)
+        {
+            isLogModalVisible = true;
+        }
+        else // 休息结束后，自动开始下一个工作时段
+        {
+            TimerService.Start();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnPhaseCompleted(PomodoroSession session, PomodoroCycleState completedState)
+    {
+        _sessionInProgress = session; // 始终用服务传来的最新会话状态更新本地副本
+
+        if (completedState == PomodoroCycleState.Work)
+        {
+            // 工作阶段结束，弹出日志记录窗口
+            isLogModalVisible = true;
+        }
+        else // 休息阶段结束
+        {
+            // 会话彻底完成
+            _sessionInProgress.EndTime = DateTime.Now;
+
+            // 核心修正：仅在会话完全结束后，才进行数据库保存
+            DbContext.Sessions.Add(_sessionInProgress);
+            await DbContext.SaveChangesAsync();
+
+            TimerService.Reset(); // 重置计时器，准备下一个新会话
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleLogCompletion((string Summary, string Category, string FullConversation) result)
+    {
+        if (_sessionInProgress != null)
+        {
+            _sessionInProgress.LLMSummary = result.Summary;
+            _sessionInProgress.ActivityCategory = result.Category;
+            _sessionInProgress.UserInput = result.FullConversation;
+        }
+
+        isLogModalVisible = false;
+
+        // 明确指令：开始下一阶段（休息）
+        TimerService.BeginNextPhase();
+    }
+
+    private void ToggleWidget()
+    {
+        if (_isWidgetVisible)
+        {
+            FloatingWindowService.Hide();
+            _isWidgetVisible = false;
+        }
+        else
+        {
+            FloatingWindowService.Show();
+            _isWidgetVisible = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        TimerService.OnTick -= OnTimerTick;
+        TimerService.OnPhaseCompleted -= OnPhaseCompleted;
+    }
+}

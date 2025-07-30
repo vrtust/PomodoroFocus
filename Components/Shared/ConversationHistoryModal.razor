@@ -1,0 +1,86 @@
+﻿@using PomodoroFocus.Models
+@using OpenAI.Chat
+@using System.Text.Json
+
+<div class="modal-backdrop show" @onclick="Close">
+    <div class="modal-content" @onclick:stopPropagation="true">
+
+        <div class="modal-header">
+            <h4>对话记录详情</h4>
+            <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+        </div>
+
+        <div class="chat-window">
+            @if (_conversationHistory != null && _conversationHistory.Any())
+            {
+                @foreach (var message in _conversationHistory)
+                {
+                    <div class="chat-message @GetMessageClass(message)">
+                        @if (message.Content != null && message.Content.Any())
+                        {
+                            @message.Content[0].Text
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="chat-message assistant-message">@_errorMessage</div>
+            }
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" @onclick="Close">关闭</button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string ConversationJson { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private List<ChatMessage> _conversationHistory;
+    private string _errorMessage = "没有有效的对话记录。";
+
+    protected override void OnParametersSet()
+    {
+        // 仅在组件变为可见时才解析JSON，提高效率
+        if (!string.IsNullOrEmpty(ConversationJson))
+        {
+            try
+            {
+                // 为防止反序列化时出现null引用，提供一个空列表作为默认值
+                _conversationHistory = JsonSerializer.Deserialize<List<ChatMessage>>(ConversationJson) ?? new List<ChatMessage>();
+                if (!_conversationHistory.Any())
+                {
+                    _errorMessage = "对话记录为空。";
+                }
+            }
+            catch (JsonException ex)
+            {
+                _conversationHistory = null;
+                _errorMessage = $"无法解析对话记录数据。错误: {ex.Message}";
+            }
+        }
+    }
+
+    private string GetMessageClass(ChatMessage message)
+    {
+        return message switch
+        {
+            UserChatMessage => "user-message",
+            AssistantChatMessage => "assistant-message",
+            _ => ""
+        };
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

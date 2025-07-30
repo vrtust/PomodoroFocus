@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PomodoroFocus.WidgetPage"
+             BackgroundColor="Transparent">
+    <VerticalStackLayout Padding="10" Spacing="5">
+        <Label x:Name="PhaseLabel" Text="工作" HorizontalOptions="Center" />
+        <Label x:Name="TimeLabel" Text="25:00" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold"/>
+        <Button x:Name="PlayPauseButton" Text="暂停" Clicked="PlayPauseButton_Clicked" HeightRequest="40" />
+    </VerticalStackLayout>
+</ContentPage>

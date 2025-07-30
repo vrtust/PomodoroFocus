@@ -1,0 +1,235 @@
+﻿@page "/history"
+@inject AppDbContext DbContext
+@inject IJSRuntime JSRuntime
+@using PomodoroFocus.Components.Shared
+
+@implements IAsyncDisposable
+
+<h3>历史记录</h3>
+
+<!-- 步骤 1: 添加视图切换按钮 -->
+<div class="view-selector btn-group mb-3" role="group">
+    <button type="button" class="btn @(_currentViewMode == ViewMode.All ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.All)">全部</button>
+    <button type="button" class="btn @(_currentViewMode == ViewMode.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Day)">日视图</button>
+    <button type="button" class="btn @(_currentViewMode == ViewMode.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Week)">周视图</button>
+    <button type="button" class="btn @(_currentViewMode == ViewMode.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Month)">月视图</button>
+    <button type="button" class="btn @(_currentViewMode == ViewMode.Year ? "btn-primary" : "btn-outline-primary")" @onclick="() => ChangeViewAsync(ViewMode.Year)">年视图</button>
+</div>
+
+<!-- 步骤 2: 自定义时间范围筛选 -->
+<div class="filter-controls mb-3 p-3 border rounded">
+    <h5 class="mb-3">@_viewTitle</h5>
+    <div class="row align-items-end">
+        <div class="col-md-4">
+            <label for="startDate">开始时间</label>
+            <!-- 升级为 datetime-local -->
+            <input id="startDate" type="datetime-local" class="form-control" @bind="_startDate" />
+        </div>
+        <div class="col-md-4">
+            <label for="endDate">结束时间</label>
+            <input id="endDate" type="datetime-local" class="form-control" @bind="_endDate" />
+        </div>
+        <div class="col-md-4 d-flex">
+            <button class="btn btn-info w-100" @onclick="ApplyCustomFilterAsync">应用自定义筛选</button>
+        </div>
+    </div>
+</div>
+
+
+@if (sessions == null || !sessions.Any())
+{
+    <p><em>@message</em></p>
+}
+else
+{
+    <div class="chart-container" style="max-width: 500px; margin: auto; min-height: 250px;">
+        <h4>活动分类占比</h4>
+        <canvas id="historyPieChart"></canvas>
+    </div>
+
+    <div class="history-list mt-4">
+        @foreach (var session in sessions.OrderByDescending(s => s.StartTime))
+        {
+            <div class="history-item clickable" @onclick="() => ShowConversationDetails(session)">
+                <div class="item-header">
+                    <span class="item-category">@session.ActivityCategory</span>
+                    <span class="item-timestamp">@session.StartTime.ToString("yyyy-MM-dd HH:mm")</span>
+                </div>
+                <div class="item-body">
+                    <p>@session.LLMSummary</p>
+                </div>
+                <div class="item-footer">
+                    <span>
+                        工作: <strong>@session.ActualWorkDurationMinutes</strong> min / 休息: <strong>@session.ActualBreakDurationMinutes</strong> min
+                    </span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (_isHistoryModalVisible)
+{
+    <ConversationHistoryModal ConversationJson="_selectedConversationJson"
+                              OnClose="() => _isHistoryModalVisible = false" />
+}
+
+@code {
+    // 步骤 1: 定义视图模式 Enum
+    private enum ViewMode { All, Day, Week, Month, Year, Custom }
+
+    private List<PomodoroSession> sessions;
+    private string message = "正在加载...";
+    private const string ChartCanvasId = "historyPieChart";
+
+    private DateTime? _startDate;
+    private DateTime? _endDate;
+    private ViewMode _currentViewMode;
+    private string _viewTitle;
+    private bool _isDataLoaded = false;
+
+    private bool _isHistoryModalVisible = false;
+    private string _selectedConversationJson;
+
+    // 页面初始化时，默认设置为日视图
+    protected override async Task OnInitializedAsync()
+    {
+        await ChangeViewAsync(ViewMode.Day);
+        _isDataLoaded = true;
+    }
+
+    // 在UI渲染完成后绘制图表
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // 仅在首次加载或数据刷新后重新渲染图表
+        if (firstRender && _isDataLoaded)
+        {
+            await RenderChartAsync();
+        }
+    }
+
+    // 步骤 2: 核心方法，用于切换预设视图
+    private async Task ChangeViewAsync(ViewMode newMode)
+    {
+        _currentViewMode = newMode;
+        var now = DateTime.Now;
+
+        switch (newMode)
+        {
+            case ViewMode.All:
+                _startDate = null;
+                _endDate = null;
+                _viewTitle = "所有记录";
+                break;
+            case ViewMode.Day:
+                _startDate = now.Date;
+                _endDate = _startDate.Value.AddDays(1).AddTicks(-1);
+                _viewTitle = $"今天 ({now:yyyy-MM-dd})";
+                break;
+            case ViewMode.Week:
+                int diff = (7 + (int)now.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+                _startDate = now.AddDays(-1 * diff).Date;
+                _endDate = _startDate.Value.AddDays(7).AddTicks(-1);
+                _viewTitle = $"本周 ({_startDate:MM-dd} - {_endDate:MM-dd})";
+                break;
+            case ViewMode.Month:
+                _startDate = new DateTime(now.Year, now.Month, 1);
+                _endDate = _startDate.Value.AddMonths(1).AddTicks(-1);
+                _viewTitle = $"{now:yyyy年MMMM}";
+                break;
+            case ViewMode.Year:
+                _startDate = new DateTime(now.Year, 1, 1);
+                _endDate = _startDate.Value.AddYears(1).AddTicks(-1);
+                _viewTitle = $"{now:yyyy年}";
+                break;
+        }
+        await ApplyFilterAsync();
+        await RenderChartAsync();
+    }
+
+    // 自定义筛选按钮的处理器
+    private async Task ApplyCustomFilterAsync()
+    {
+        _currentViewMode = ViewMode.Custom;
+        if (_startDate.HasValue && _endDate.HasValue)
+        {
+            _viewTitle = $"自定义范围: {_startDate:g} - {_endDate:g}";
+        }
+        else
+        {
+            _viewTitle = "自定义范围";
+        }
+        await ApplyFilterAsync();
+        await RenderChartAsync();
+    }
+
+    // 通用的数据查询和UI刷新方法
+    private async Task ApplyFilterAsync()
+    {
+        var query = DbContext.Sessions.AsQueryable();
+
+        if (_startDate.HasValue)
+        {
+            // 支持时间段筛选
+            query = query.Where(s => s.StartTime >= _startDate.Value);
+        }
+        if (_endDate.HasValue)
+        {
+            query = query.Where(s => s.EndTime <= _endDate.Value);
+        }
+
+        sessions = await query.ToListAsync();
+
+        if (!sessions.Any())
+        {
+            message = "在指定的时间范围内没有找到任何记录。";
+        }
+
+        // 仅刷新C#部分的UI，图表渲染交由OnAfterRenderAsync
+        StateHasChanged();
+    }
+
+    private async Task RenderChartAsync()
+    {
+        if (sessions == null || !sessions.Any())
+        {
+            await JSRuntime.InvokeVoidAsync("destroyChart", ChartCanvasId);
+            return;
+        }
+
+        var categoryDistribution = sessions
+            .Where(s => !string.IsNullOrEmpty(s.ActivityCategory) && s.ActualWorkDurationMinutes > 0)
+            .GroupBy(s => s.ActivityCategory)
+            .Select(g => new
+            {
+                Category = g.Key,
+                TotalMinutes = g.Sum(s => s.ActualWorkDurationMinutes)
+            })
+            .ToList();
+
+        if (categoryDistribution.Any())
+        {
+            var chartData = new
+            {
+                labels = categoryDistribution.Select(d => d.Category).ToArray(),
+                values = categoryDistribution.Select(d => d.TotalMinutes).ToArray()
+            };
+            await JSRuntime.InvokeVoidAsync("createOrUpdatePieChart", ChartCanvasId, chartData);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("destroyChart", ChartCanvasId);
+        }
+    }
+
+    private void ShowConversationDetails(PomodoroSession session)
+    {
+        _selectedConversationJson = session.UserInput;
+        _isHistoryModalVisible = true;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("destroyChart", ChartCanvasId);
+    }
+}

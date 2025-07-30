@@ -1,0 +1,120 @@
+﻿@inject ILLMService LlmService
+@using System.Text.Json
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4>记录你的活动</h4>
+            </div>
+
+            <div class="chat-window">
+                @foreach (var message in conversationHistory)
+                {
+                    <div class="chat-message @GetMessageClass(message)">
+                        @message.Content[0].Text
+                    </div>
+                }
+                @if (isLoading)
+                {
+                    <div class="chat-message assistant-message">...</div>
+                }
+            </div>
+
+            <div class="input-area">
+                <input @bind="currentUserInput" @onkeydown="HandleKeyDown" placeholder="输入你做了什么..." disabled="@isLoading" />
+                <button @onclick="SendMessage" disabled="@isLoading">发送</button>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-finish" @onclick="FinishLogging">完成记录</button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    // 2. 更新 EventCallback 的签名，增加 string FullConversation
+    [Parameter]
+    public EventCallback<(string Summary, string Category, string FullConversation)> OnComplete { get; set; }
+
+    private string currentUserInput = "";
+    private List<ChatMessage> conversationHistory = new();
+    private bool isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && conversationHistory.Count == 0)
+        {
+            isLoading = true;
+            var initialPrompt = await LlmService.GetInitialPromptAsync();
+            conversationHistory.Add(new AssistantChatMessage(initialPrompt));
+            isLoading = false;
+        }
+    }
+    
+    // 省略 GetMessageClass, SendMessage, HandleKeyDown 方法 (无改动)
+    private string GetMessageClass(ChatMessage message)
+    {
+        return message switch
+        {
+            UserChatMessage => "user-message",
+            AssistantChatMessage => "assistant-message",
+            _ => ""
+        };
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(currentUserInput) || isLoading) return;
+
+        var userMessage = currentUserInput;
+        conversationHistory.Add(new UserChatMessage(userMessage));
+        currentUserInput = "";
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        var assistantResponse = await LlmService.GetNextResponseAsync(conversationHistory);
+        conversationHistory.Add(new AssistantChatMessage(assistantResponse));
+        isLoading = false;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task FinishLogging()
+    {
+        isLoading = true;
+        if (conversationHistory.Count == 0)
+        {
+            isLoading = false;
+            return;
+        }
+        
+        // 3. 将对话历史序列化为JSON字符串
+        var conversationJson = JsonSerializer.Serialize(conversationHistory);
+        
+        var result = await LlmService.SummarizeConversationAsync(conversationHistory);
+        isLoading = false;
+
+        conversationHistory.Clear();
+        
+        // 4. 将包含JSON的完整结果传递给父组件
+        await OnComplete.InvokeAsync((result.Summary, result.Category, conversationJson));
+        await OnClose.InvokeAsync();
+    }
+}

@@ -183,8 +183,20 @@
             return;
         }
 
-        // 将对话历史序列化为JSON字符串
-        var conversationJson = JsonSerializer.Serialize(conversationHistory);
+        var simpleHistory = conversationHistory.Select(m => new SimpleChatMessage
+        {
+            Role = m switch
+            {
+                UserChatMessage => "User",
+                AssistantChatMessage => "Assistant",
+                SystemChatMessage => "System",
+                _ => "Unknown"
+            },
+            // 我们假设第一个内容部分是我们想要保存的文本。
+            Content = m.Content.FirstOrDefault()?.Text ?? string.Empty
+        }).ToList();
+
+        var conversationJson = JsonSerializer.Serialize(simpleHistory);
 
         var result = await LlmService.SummarizeConversationAsync(conversationHistory);
         isLoading = false;

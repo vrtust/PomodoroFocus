@@ -31,11 +31,11 @@
                 <div class="space-y-4">
                     @foreach (var message in _conversationHistory)
                     {
-                        <div class="flex @(message is UserChatMessage ? "justify-end" : "justify-start")">
+                        <div class="flex @(message.Role == "User" ? "justify-end" : "justify-start")">
                             <div class="max-w-[80%] rounded-2xl px-4 py-3 @(GetMessageClass(message))">
                                 <div class="flex items-center mb-2">
-                                    <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center @(message is UserChatMessage ? "bg-blue-500" : "bg-purple-500") mr-2">
-                                        @if (message is UserChatMessage)
+                                    <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center @(message.Role == "User" ? "bg-blue-500" : "bg-purple-500") mr-2">
+                                        @if (message.Role == "User")
                                         {
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -48,15 +48,12 @@
                                             </svg>
                                         }
                                     </div>
-                                    <span class="text-xs font-medium @(message is UserChatMessage ? "text-blue-700 dark:text-blue-300" : "text-purple-700 dark:text-purple-300")">
-                                        @(message is UserChatMessage ? "你" : "AI助手")
+                                    <span class="text-xs font-medium @(message.Role == "User" ? "text-blue-700 dark:text-blue-300" : "text-purple-700 dark:text-purple-300")">
+                                        @(message.Role == "User" ? "你" : "AI助手")
                                     </span>
                                 </div>
                                 <div class="text-gray-800 dark:text-gray-200">
-                                    @if (message.Content != null && message.Content.Any())
-                                    {
-                                        @message.Content[0].Text
-                                    }
+                                    @message.Content
                                 </div>
                             </div>
                         </div>
@@ -97,7 +94,7 @@
     [Parameter]
     public EventCallback OnClose { get; set; }
 
-    private List<ChatMessage> _conversationHistory;
+    private List<SimpleChatMessage> _conversationHistory;
     private string _errorMessage = "没有有效的对话记录。";
 
     protected override void OnParametersSet()
@@ -108,7 +105,7 @@
             try
             {
                 // 为防止反序列化时出现null引用，提供一个空列表作为默认值
-                _conversationHistory = JsonSerializer.Deserialize<List<ChatMessage>>(ConversationJson) ?? new List<ChatMessage>();
+                _conversationHistory = JsonSerializer.Deserialize<List<SimpleChatMessage>>(ConversationJson) ?? new List<SimpleChatMessage>();
                 if (!_conversationHistory.Any())
                 {
                     _errorMessage = "对话记录为空。";
@@ -122,12 +119,12 @@
         }
     }
 
-    private string GetMessageClass(ChatMessage message)
+    private string GetMessageClass(SimpleChatMessage message)
     {
-        return message switch
+        return message.Role switch
         {
-            UserChatMessage => "bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/50",
-            AssistantChatMessage => "bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800/50",
+            "User" => "bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/50",
+            "Assistant" => "bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800/50",
             _ => "bg-gray-100 dark:bg-gray-700"
         };
     }

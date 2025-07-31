@@ -16,8 +16,8 @@ namespace PomodoroFocus.Models
         public int PlannedBreakDurationMinutes { get; set; } // 计划的休息时长
         public int ActualBreakDurationMinutes { get; set; } // 实际的休息时长
 
-        public string UserInput { get; set; } // 对话历史JSON
-        public string LLMSummary { get; set; }
-        public string ActivityCategory { get; set; }
+        public string UserInput { get; set; } = string.Empty;  // 对话历史JSON
+        public string LLMSummary { get; set; } = string.Empty;
+        public string ActivityCategory { get; set; } = string.Empty;
     }
 }

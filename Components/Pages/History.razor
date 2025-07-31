@@ -162,7 +162,7 @@
 
 @if (_isHistoryModalVisible)
 {
-    <ConversationHistoryModal ConversationJson="_selectedConversationJson"
+    <ConversationHistoryModal ConversationJson="@_selectedConversationJson"
                               OnClose="() => _isHistoryModalVisible = false" />
 }
 
@@ -316,8 +316,9 @@
 
     private void ShowConversationDetails(PomodoroSession session)
     {
-        _selectedConversationJson = session.UserInput;
+        _selectedConversationJson = string.IsNullOrWhiteSpace(session.UserInput) ? "[]" : session.UserInput;
         _isHistoryModalVisible = true;
+        StateHasChanged(); // 确保UI在非async方法中也能更新
     }
 
     public async ValueTask DisposeAsync()

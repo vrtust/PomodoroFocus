@@ -29,35 +29,46 @@
             <!-- 对话内容区域 -->
             <div class="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900/50">
                 <div class="space-y-4">
-                    @foreach (var message in conversationHistory)
+                    @foreach (var uiMessage in conversationHistory)
                     {
-                        <div class="flex @(message is UserChatMessage ? "justify-end" : "justify-start")">
-                            <div class="max-w-[80%] rounded-2xl px-4 py-3 @(GetMessageClass(message))">
-                                <div class="flex items-center mb-2">
-                                    <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center @(message is UserChatMessage ? "bg-green-500" : "bg-blue-500") mr-2">
-                                        @if (message is UserChatMessage)
+                        <div class="flex @(uiMessage.Message is UserChatMessage ? "justify-end" : "justify-start") w-full">
+                            <div class="flex items-end gap-2 @(uiMessage.Message is UserChatMessage ? "flex-row-reverse" : "flex-row") w-full">
+                                <div class="max-w-[80%] rounded-2xl px-4 py-3 @(GetMessageClass(uiMessage.Message)) flex-shrink">
+                                    <div class="flex items-center mb-2">
+                                        <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center @(uiMessage.Message is UserChatMessage ? "bg-green-500" : "bg-blue-500") mr-2">
+                                            @if (uiMessage.Message is UserChatMessage)
+                                            {
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                </svg>
+                                            }
+                                            else
+                                            {
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                                </svg>
+                                            }
+                                        </div>
+                                        <span class="text-xs font-medium @(uiMessage.Message is UserChatMessage ? "text-green-700 dark:text-green-300" : "text-blue-700 dark:text-blue-300")">
+                                            @(uiMessage.Message is UserChatMessage ? "你" : "AI助手")
+                                        </span>
+                                    </div>
+                                    <div class="text-gray-800 dark:text-gray-200">
+                                        @if (uiMessage.Message.Content != null && uiMessage.Message.Content.Any())
                                         {
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                            </svg>
-                                        }
-                                        else
-                                        {
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                                            </svg>
+                                            @uiMessage.Message.Content[0].Text
                                         }
                                     </div>
-                                    <span class="text-xs font-medium @(message is UserChatMessage ? "text-green-700 dark:text-green-300" : "text-blue-700 dark:text-blue-300")">
-                                        @(message is UserChatMessage ? "你" : "AI助手")
-                                    </span>
                                 </div>
-                                <div class="text-gray-800 dark:text-gray-200">
-                                    @if (message.Content != null && message.Content.Any())
-                                    {
-                                        @message.Content[0].Text
-                                    }
-                                </div>
+                                @* 如果发送失败，显示重试按钮 *@
+                                @if (!uiMessage.IsSent && uiMessage.Message is UserChatMessage && !isLoading)
+                                {
+                                    <button @onclick="() => RetrySendMessage(uiMessage)" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full transition-colors duration-200 mb-1 flex-shrink-0" aria-label="重试">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zM.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                }
                             </div>
                         </div>
                     }
@@ -87,10 +98,20 @@
 
             <!-- 输入区域 -->
             <div class="p-6 bg-white dark:bg-gray-800 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-lg flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 dark:text-red-400 mr-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-sm text-red-700 dark:text-red-300">@errorMessage</span>
+                    </div>
+                }
+
                 <div class="flex space-x-3">
-                    <input @bind="currentUserInput" @onkeydown="HandleKeyDown" placeholder="输入你做了什么..." disabled="@isLoading"
+                    <input @bind="currentUserInput" @onkeydown="HandleKeyDown" placeholder="@(HasFailedMessage ? "请先解决发送失败的消息" : "输入你做了什么...")" disabled="@isLoading"
                            class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" />
-                    <button @onclick="SendMessage" disabled="@isLoading"
+                    <button @onclick="SendMessage" disabled="@(isLoading || HasFailedMessage)"
                             class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -126,17 +147,27 @@
     [Parameter]
     public EventCallback<(string Summary, string Category, string FullConversation)> OnComplete { get; set; }
 
+    public class UIMessage
+    {
+        public ChatMessage Message { get; set; }
+        public bool IsSent { get; set; } = true; // 默认是已发送成功
+        public bool IsSending { get; set; } = false; // 标记正在发送中
+    }
+
     private string currentUserInput = "";
-    private List<ChatMessage> conversationHistory = new();
+    private List<UIMessage> conversationHistory = new();
     private bool isLoading = false;
+    private string errorMessage = null;
+
+    private bool HasFailedMessage => conversationHistory.Any(m => !m.IsSent && !m.IsSending);
 
     protected override async Task OnParametersSetAsync()
     {
         if (IsVisible && conversationHistory.Count == 0)
         {
-            isLoading = true;
+            isLoading = true; 
             var initialPrompt = await LlmService.GetInitialPromptAsync();
-            conversationHistory.Add(new AssistantChatMessage(initialPrompt));
+            conversationHistory.Add(new UIMessage { Message = new AssistantChatMessage(initialPrompt) , IsSent = true});
             isLoading = false;
         }
     }
@@ -151,19 +182,62 @@
         };
     }
 
-    private async Task SendMessage()
+    private async Task ExecuteSend(UIMessage messageToSend)
     {
-        if (string.IsNullOrWhiteSpace(currentUserInput) || isLoading) return;
-
-        var userMessage = currentUserInput.Trim();
-        conversationHistory.Add(new UserChatMessage(userMessage));
-        currentUserInput = "";
-        isLoading = true;
+        errorMessage = null;
+        messageToSend.IsSending = true;
+        messageToSend.IsSent = false;
+        isLoading = true; // 全局加载状态
         await InvokeAsync(StateHasChanged);
 
-        var assistantResponse = await LlmService.GetNextResponseAsync(conversationHistory);
-        conversationHistory.Add(new AssistantChatMessage(assistantResponse));
-        isLoading = false;
+        try
+        {
+            // 总是从完整的、未失败的历史中发送
+            var historyToSend = conversationHistory
+                .Where(ui => ui.IsSent || ui == messageToSend) // 只包括已发送成功的消息
+                .Select(ui => ui.Message)
+                .ToList();
+
+            var assistantResponse = await LlmService.GetNextResponseAsync(historyToSend);
+
+            // 成功！
+            conversationHistory.Add(new UIMessage { Message = new AssistantChatMessage(assistantResponse), IsSent = true });
+            messageToSend.IsSent = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"AI响应失败: {ex.Message}。请检查您的API Key和网络连接后重试。";
+            // 保持 messageToSend.IsSent = false;
+        }
+        finally
+        {
+            messageToSend.IsSending = false;
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(currentUserInput) || isLoading || HasFailedMessage) return;
+
+        var userMessageText = currentUserInput.Trim();
+        currentUserInput = ""; // 清空输入框
+
+        var newUserMessage = new UIMessage
+        {
+            Message = new UserChatMessage(userMessageText),
+            IsSent = false // 标记为待发送
+        };
+        conversationHistory.Add(newUserMessage);
+
+        await ExecuteSend(newUserMessage);
+    }
+
+    private async Task RetrySendMessage(UIMessage messageToRetry)
+    {
+        if (isLoading) return; // 防止重复点击
+        await ExecuteSend(messageToRetry);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
@@ -176,39 +250,57 @@
 
     private async Task FinishLogging()
     {
-        isLoading = true;
-        if (conversationHistory.Count == 0)
+        if (HasFailedMessage)
         {
-            isLoading = false;
+            errorMessage = "无法完成记录，有消息发送失败。请先重试。";
             return;
         }
 
-        var simpleHistory = conversationHistory.Select(m => new SimpleChatMessage
+        // 如果没有对话，不需要调用AI
+        if (conversationHistory.Count <= 1)
         {
-            Role = m switch
+            await OnComplete.InvokeAsync(("未记录活动详情", "未分类", "[]"));
+            await Close();
+            return;
+        }
+
+        errorMessage = null; // 清除之前的错误
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var cleanHistory = conversationHistory.Select(ui => ui.Message).ToList();
+            var simpleHistory = cleanHistory.Select(m => new SimpleChatMessage
             {
-                UserChatMessage => "User",
-                AssistantChatMessage => "Assistant",
-                SystemChatMessage => "System",
-                _ => "Unknown"
-            },
-            // 我们假设第一个内容部分是我们想要保存的文本。
-            Content = m.Content.FirstOrDefault()?.Text ?? string.Empty
-        }).ToList();
+                Role = m switch { UserChatMessage => "User", AssistantChatMessage => "Assistant", _ => "Unknown" },
+                Content = m.Content.FirstOrDefault()?.Text ?? string.Empty
+            }).ToList();
 
-        var conversationJson = JsonSerializer.Serialize(simpleHistory);
+            var conversationJson = JsonSerializer.Serialize(simpleHistory);
+            var result = await LlmService.SummarizeConversationAsync(cleanHistory);
 
-        var result = await LlmService.SummarizeConversationAsync(conversationHistory);
-        isLoading = false;
-        conversationHistory.Clear();
-
-        // 将包含JSON的完整结果传递给父组件
-        await OnComplete.InvokeAsync((result.Summary, result.Category, conversationJson));
-        await OnClose.InvokeAsync();
+            await OnComplete.InvokeAsync((result.Summary, result.Category, conversationJson));
+            await Close(); // 仅在成功时关闭模态框
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"生成摘要失败: {ex.Message}。请重试。";
+        }
+        finally
+        {
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task Close()
     {
+        // 清理状态，以便下次打开时是干净的
+        conversationHistory.Clear();
+        errorMessage = null;
+        isLoading = false;
+        currentUserInput = "";
         await OnClose.InvokeAsync();
     }
 }

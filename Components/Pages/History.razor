@@ -133,25 +133,57 @@
                     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         @foreach (var session in sessions.OrderByDescending(s => s.StartTime))
                         {
-                            <div class="bg-white dark:bg-gray-700 rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border border-gray-200 dark:border-gray-600" @onclick="() => ShowConversationDetails(session)" tabindex="0">
+                            // 1. 定义一个变量来存储卡片的 CSS 类
+                            var cardClasses = IsUnloggedSession(session)
+                                // 如果是未记录的会话，使用这些“低调”的样式
+                                ? "bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                // 否则，使用原来的、更“突出”的样式
+                                : "bg-white dark:bg-gray-700 rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:-translate-y-1 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border border-gray-200 dark:border-gray-600";
+                        
+                            // 2. 应用这些类
+                            <div class="@cardClasses" @onclick="() => ShowConversationDetails(session)" tabindex="0">
                                 <div class="flex justify-between items-start mb-3">
-                                    <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm font-medium rounded-full transition-colors duration-200">@session.ActivityCategory</span>
-                                    <span class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">@session.StartTime.ToString("yyyy-MM-dd HH:mm")</span>
-                                </div>
-                                <div class="mb-4">
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3 transition-colors duration-200">@session.LLMSummary</p>
-                                </div>
-                                <div class="pt-3 border-t border-gray-200 dark:border-gray-600 transition-colors duration-200">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400 transition-colors duration-200">
-                                            工作: <strong class="text-green-600 dark:text-green-400">@session.ActualWorkDurationMinutes</strong> 分钟
+                                    @* 优化分类标签样式 *@
+                                    @if(IsUnloggedSession(session))
+                                    {
+                                        <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 
+                                                     text-gray-600 dark:text-gray-400 
+                                                     text-xs font-semibold tracking-wide rounded-full">
+                                            未记录
                                         </span>
-                                        <span class="text-gray-600 dark:text-gray-400 transition-colors duration-200">
-                                            休息: <strong class="text-blue-600 dark:text-blue-400">@session.ActualBreakDurationMinutes</strong> 分钟
+                                    }
+                                    else
+                                    {
+                                        <span class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 
+                                                     text-blue-700 dark:text-blue-200 
+                                                     text-xs font-semibold tracking-wide rounded-full">
+                                            @session.ActivityCategory
                                         </span>
-                                    </div>
+                                    }
+                                    
+                                    @* 优化时间显示样式 *@
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 
+                                                 font-medium leading-relaxed tracking-tight">
+                                        @session.StartTime.ToString("yyyy-MM-dd HH:mm")
+                                    </span>
+                                </div>
+                            <div class="mb-4">
+                                @* 我们甚至可以对摘要文本应用不同的样式 *@
+                                <p class="@(IsUnloggedSession(session) ? "text-gray-500 dark:text-gray-400 italic" : "text-gray-700 dark:text-gray-300") text-sm line-clamp-3">
+                                    @session.LLMSummary
+                                </p>
+                            </div>
+                            <div class="pt-3 border-t border-gray-200 dark:border-gray-600">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600 dark:text-gray-400">
+                                        工作: <strong class="text-green-600 dark:text-green-400">@session.ActualWorkDurationMinutes</strong> 分钟
+                                    </span>
+                                    <span class="text-gray-600 dark:text-gray-400">
+                                        休息: <strong class="text-blue-600 dark:text-blue-400">@session.ActualBreakDurationMinutes</strong> 分钟
+                                    </span>
                                 </div>
                             </div>
+                        </div>
                         }
                     </div>
                 }
@@ -319,6 +351,14 @@
         _selectedConversationJson = string.IsNullOrWhiteSpace(session.UserInput) ? "[]" : session.UserInput;
         _isHistoryModalVisible = true;
         StateHasChanged(); // 确保UI在非async方法中也能更新
+    }
+
+    private bool IsUnloggedSession(PomodoroSession session)
+    {
+        // 我们可以根据 LLMSummary 的特定文本来判断。
+        // 为了更健壮，也可以考虑检查 ActivityCategory 是否为 "未分类" 或类似的值。
+        const string unloggedSummary = "在该番茄钟完成后并未进行任何对话";
+        return session.LLMSummary == unloggedSummary || string.IsNullOrEmpty(session.ActivityCategory) || session.ActivityCategory == "未分类";
     }
 
     public async ValueTask DisposeAsync()

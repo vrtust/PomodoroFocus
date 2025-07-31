@@ -2,42 +2,95 @@
 @using OpenAI.Chat
 @using System.Text.Json
 
-<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-all duration-300 ease-out z-50" @onclick="Close">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4 p-6 transform transition-all duration-300 ease-out scale-100" @onclick:stopPropagation="true">
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300 ease-out z-50" @onclick="Close">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-100" @onclick:stopPropagation="true">
 
-        <div class="relative">
-            <h4 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100 transition-colors duration-200">对话记录详情</h4>
-            <button type="button" class="absolute -top-2 -right-2 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50" @onclick="Close" aria-label="Close">✕</button>
+        <!-- 模态框头部 -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="p-2 bg-white/20 rounded-lg mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">对话记录详情</h3>
+                </div>
+                <button type="button" class="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" @onclick="Close" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <div class="max-h-96 overflow-auto">
+        <!-- 对话内容区域 -->
+        <div class="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900/50">
             @if (_conversationHistory != null && _conversationHistory.Any())
             {
-                @foreach (var message in _conversationHistory)
-                {
-                    <div class="p-4 mb-2 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors duration-200 @GetMessageClass(message)">
-                        @if (message.Content != null && message.Content.Any())
-                        {
-                            @message.Content[0].Text
-                        }
-                    </div>
-                }
+                <div class="space-y-4">
+                    @foreach (var message in _conversationHistory)
+                    {
+                        <div class="flex @(message is UserChatMessage ? "justify-end" : "justify-start")">
+                            <div class="max-w-[80%] rounded-2xl px-4 py-3 @(GetMessageClass(message))">
+                                <div class="flex items-center mb-2">
+                                    <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center @(message is UserChatMessage ? "bg-blue-500" : "bg-purple-500") mr-2">
+                                        @if (message is UserChatMessage)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                            </svg>
+                                        }
+                                    </div>
+                                    <span class="text-xs font-medium @(message is UserChatMessage ? "text-blue-700 dark:text-blue-300" : "text-purple-700 dark:text-purple-300")">
+                                        @(message is UserChatMessage ? "你" : "AI助手")
+                                    </span>
+                                </div>
+                                <div class="text-gray-800 dark:text-gray-200">
+                                    @if (message.Content != null && message.Content.Any())
+                                    {
+                                        @message.Content[0].Text
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
             else
             {
-                <div class="p-4 mb-2 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors duration-200">@_errorMessage</div>
+                <div class="flex flex-col items-center justify-center h-full py-12">
+                    <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-center">@_errorMessage</p>
+                </div>
             }
         </div>
 
-        <div class="mt-4 flex justify-end">
-            <button class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95" @onclick="Close">关闭</button>
+        <!-- 模态框底部 -->
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-end">
+                <button class="px-6 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95 flex items-center" @onclick="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    关闭
+                </button>
+            </div>
         </div>
-
     </div>
 </div>
 
 @code {
-
     [Parameter]
     public string ConversationJson { get; set; }
 
@@ -73,9 +126,9 @@
     {
         return message switch
         {
-            UserChatMessage => "user-message",
-            AssistantChatMessage => "assistant-message",
-            _ => ""
+            UserChatMessage => "bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/50",
+            AssistantChatMessage => "bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800/50",
+            _ => "bg-gray-100 dark:bg-gray-700"
         };
     }
 

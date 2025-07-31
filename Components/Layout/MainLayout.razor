@@ -2,27 +2,24 @@
 @inject IThemeService ThemeService
 @inject ISettingsService SettingsService
 
-<div class="flex min-h-screen bg-gray-50">
-    <!-- 桌面端侧边栏，移动端隐藏 -->
-    <div class="hidden md:block w-64 bg-white shadow-lg">
-        <NavMenu />
+<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- 桌面端侧边栏 -->
+    <div class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:z-30">
+        <NavMenu IsMobileMenu="false" />
     </div>
 
     <!-- 移动端导航栏 -->
-    <div class="md:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-lg">
-        <NavMenu />
+    <div class="md:hidden fixed top-0 left-0 right-0 z-40">
+        <NavMenu IsMobileMenu="true" />
     </div>
 
-    <main class="flex-1 flex flex-col md:ml-0 pt-16 md:pt-0">
-        <div class="bg-white shadow-sm border-b px-4 md:px-6 py-4 transition-colors duration-200">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank"
-               class="text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-md px-2 py-1 transition-all duration-200 hover:shadow-lg">
-               About
-            </a>
-        </div>
-
-        <article class="flex-1 p-4 md:p-6">
-            @Body
+    <!-- 主内容区域 -->
+    <main class="flex-1 flex flex-col md:ml-64 pt-16 md:pt-0">
+        <!-- 内容区域 -->
+        <article class="flex-1">
+            <div class="container mx-auto px-4 py-6 max-w-7xl">
+                @Body
+            </div>
         </article>
     </main>
 </div>

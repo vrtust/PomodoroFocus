@@ -5,88 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>PomodoroFocus</title>
     <base href="/" />
-    <!-- <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" /> -->
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="PomodoroFocus.styles.css" />
     <link rel="icon" href="data:,">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         (function () {
             // 从localStorage读取主题设置
             const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-            } else if (theme === 'light') {
-                document.documentElement.classList.remove('dark-mode');
+            if (theme === 'Dark') {
+                document.documentElement.classList.add('dark');
+            } else if (theme === 'Light') {
+                document.documentElement.classList.remove('dark');
             } else { // 'system' or null
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.documentElement.classList.add('dark-mode');
+                    document.documentElement.classList.add('dark');
                 }
             }
         })();
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-            },
-            colors: {
-              primary: '#3b82f6',    // 示例中的主色调
-              secondary: '#6366f1',  // 示例中的辅助色
-              accent: '#10b981'      // 示例中的强调色
-            },
-            boxShadow: {
-              card: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            },
-            transitionProperty: {
-              'height': 'height',
-              'spacing': 'margin, padding',
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: '#3b82f6',    // 示例中的主色调
+                        secondary: '#6366f1',  // 示例中的辅助色
+                        accent: '#10b981'      // 示例中的强调色
+                    },
+                    boxShadow: {
+                        card: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
             }
-          }
         }
-      }
     </script>
+    <style>
+        /* 自定义动画 */
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* 确保暗色模式变量正确应用 */
+        html.dark-mode {
+            --background-color: #1e1e1e;
+            --text-color: #f0f0f0;
+            --secondary-background-color: #2c2c2c;
+            --border-color: #444444;
+            --accent-color: #0d6efd;
+            --accent-text-color: #ffffff;
+        }
+
+        /* 平滑过渡 */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* 模糊背景效果 */
+        .backdrop-blur-lg {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: 3rem !important;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+                .button-group button {
+                    width: 100%;
+                    min-width: 200px;
+                }
+        }
+    </style>
 </head>
-
 <body>
-
     <div class="status-bar-safe-area"></div>
-
     <div id="app">Loading...</div>
-
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-
     <script>
         window.setTheme = (theme) => {
             const htmlElement = document.documentElement; // 确保操作目标与脚本A一致
-
             // 移除所有可能的主题类，以防万一
-            htmlElement.classList.remove('dark-mode');
-
+            htmlElement.classList.remove('dark');
             if (theme === 'Dark') {
-                htmlElement.classList.add('dark-mode');
+                htmlElement.classList.add('dark');
             } else if (theme === 'Light') {
                 // 'light' 模式不需要额外添加类
             } else { // 'system'
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    htmlElement.classList.add('dark-mode');
+                    htmlElement.classList.add('dark');
                 }
             }
         };
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/customCharts.js"></script>
-
     <script src="_framework/blazor.webview.js" autostart="false"></script>
-
 </body>
-
 </html>

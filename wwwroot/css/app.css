@@ -3,16 +3,27 @@
 @tailwind utilities;
 
 @layer base {
-  body { @apply font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100; }
+    body {
+        @apply font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100;
+        font-family: 'Inter', ui-sans-serif, system-ui;
+    }
 }
 
 @layer components {
-  .btn-primary { @apply px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95; }
-  .btn-secondary { @apply px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95; }
-  .card { @apply p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1; }
+    .btn-primary {
+        @apply px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95 flex items-center justify-center;
+    }
+
+    .btn-secondary {
+        @apply px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 active:scale-95 flex items-center justify-center;
+    }
+
+    .card {
+        @apply p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100 dark:border-gray-700;
+    }
 }
 
-﻿/* :root 定义了亮色模式的默认变量 */
+/* :root 定义了亮色模式的默认变量 */
 :root {
     --background-color: #ffffff; /* 主背景色 */
     --text-color: #333333; /* 主文本颜色 */
@@ -28,15 +39,6 @@ html {
     color: var(--text-color);
 }
 
-html.dark-mode {
-    --background-color: #1e1e1e;
-    --text-color: #f0f0f0;
-    --secondary-background-color: #2c2c2c;
-    --border-color: #444444;
-    --accent-color: #0d6efd;
-    --accent-text-color: #ffffff;
-}
-
 /* 你可以继续将变量应用到其他你自定义的样式上，例如：*/
 .history-item {
     background-color: var(--secondary-background-color);
@@ -45,7 +47,7 @@ html.dark-mode {
 
 /*#if (SampleContent)*/
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a, .btn-link {
@@ -65,8 +67,8 @@ a, .btn-link {
 .content {
     padding-top: 1.1rem;
 }
-
 /*#endif*/
+
 h1:focus {
     outline: none;
 }
@@ -133,20 +135,19 @@ h1:focus {
 }
 
 /* 追加到 wwwroot/css/app.css */
-
 .timer-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 80vh; /* 占据大部分屏幕高度 */
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
     gap: 2rem; /* 元素之间的间距 */
 }
 
 .timer-display {
     font-size: 8rem; /* 巨大的字体尺寸 */
-    font-weight: 300; /* 更细的字体 */
+    font-weight: 700; /* 更粗的字体 */
     color: #333;
 }
 
@@ -200,184 +201,183 @@ button {
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
-/* 确保暗色模式下也有对应的悬停颜色 */
-html.dark-mode {
-    --secondary-background-color-hover: #3a3a3a;
-}
-
 /* 响应式和交互动效增强样式 */
 @layer utilities {
-  /* 自定义动画关键帧 */
-  @keyframes slideInFromLeft {
-    0% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    100% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOutToLeft {
-    0% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  }
-  
-  @keyframes modalIn {
-    0% {
-      transform: scale(0.9);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes modalOut {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(0.9);
-      opacity: 0;
-    }
-  }
+    /* 自定义动画关键帧 */
+    @keyframes slideInFromLeft {
+        0% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
 
-  /* 自定义工具类 */
-  .animate-slide-in-left {
-    animation: slideInFromLeft 0.3s ease-out;
-  }
-  
-  .animate-slide-out-left {
-    animation: slideOutToLeft 0.3s ease-out;
-  }
-  
-  .animate-modal-in {
-    animation: modalIn 0.3s ease-out;
-  }
-  
-  .animate-modal-out {
-    animation: modalOut 0.3s ease-out;
-  }
+        100% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
 
-  /* 增强的过渡效果 */
-  .transition-colors-enhanced {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
-  
-  .transition-transform-enhanced {
-    transition-property: transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
-  }
+    @keyframes slideOutToLeft {
+        0% {
+            transform: translateX(0);
+            opacity: 1;
+        }
 
-  /* 响应式工具类增强 */
-  .responsive-text {
-    @apply text-sm sm:text-base md:text-lg lg:text-xl;
-  }
-  
-  .responsive-padding {
-    @apply p-2 sm:p-4 md:p-6 lg:p-8;
-  }
-  
-  .responsive-margin {
-    @apply m-2 sm:m-4 md:m-6 lg:m-8;
-  }
+        100% {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+    }
 
-  /* 交互状态增强 */
-  .interactive-card {
-    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
-  }
-  
-  .interactive-button {
-    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 active:scale-95 focus:outline-none focus:ring-2 focus:ring-opacity-50;
-  }
-  
-  .interactive-input {
-    @apply transition-all duration-200 hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
-  }
+    @keyframes modalIn {
+        0% {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes modalOut {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+    }
+
+    /* 自定义工具类 */
+    .animate-slide-in-left {
+        animation: slideInFromLeft 0.3s ease-out;
+    }
+
+    .animate-slide-out-left {
+        animation: slideOutToLeft 0.3s ease-out;
+    }
+
+    .animate-modal-in {
+        animation: modalIn 0.3s ease-out;
+    }
+
+    .animate-modal-out {
+        animation: modalOut 0.3s ease-out;
+    }
+
+    /* 增强的过渡效果 */
+    .transition-colors-enhanced {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+    }
+
+    .transition-transform-enhanced {
+        transition-property: transform;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+    }
+
+    /* 响应式工具类增强 */
+    .responsive-text {
+        @apply text-sm sm:text-base md:text-lg lg:text-xl;
+    }
+
+    .responsive-padding {
+        @apply p-2 sm:p-4 md:p-6 lg:p-8;
+    }
+
+    .responsive-margin {
+        @apply m-2 sm:m-4 md:m-6 lg:m-8;
+    }
+
+    /* 交互状态增强 */
+    .interactive-card {
+        @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+    }
+
+    .interactive-button {
+        @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 active:scale-95 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    }
+
+    .interactive-input {
+        @apply transition-all duration-200 hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    }
 }
 
 /* 移动端专用样式优化 */
 @media (max-width: 768px) {
-  .timer-display {
-    font-size: 4rem !important;
-  }
-  
-  .button-group {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .button-group button {
-    width: 100%;
-    min-width: 200px;
-  }
-  
-  /* 移动端模态框优化 */
-  .modal-mobile {
-    @apply mx-2 max-h-[90vh] overflow-y-auto;
-  }
+    .timer-display {
+        font-size: 4rem !important;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+        .button-group button {
+            width: 100%;
+            min-width: 200px;
+        }
+
+    /* 移动端模态框优化 */
+    .modal-mobile {
+        @apply mx-2 max-h-[90vh] overflow-y-auto;
+    }
 }
 
 /* 平板端样式优化 */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .timer-display {
-    font-size: 6rem !important;
-  }
+    .timer-display {
+        font-size: 6rem !important;
+    }
 }
 
 /* 桌面端大屏幕优化 */
 @media (min-width: 1024px) {
-  .container {
-    max-width: 1200px;
-  }
-  
-  .timer-display {
-    font-size: 8rem !important;
-  }
+    .container {
+        max-width: 1200px;
+    }
+
+    .timer-display {
+        font-size: 8rem !important;
+    }
 }
 
 /* 打印样式 */
 @media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  .print-friendly {
-    background: white !important;
-    color: black !important;
-    box-shadow: none !important;
-  }
+    .no-print {
+        display: none !important;
+    }
+
+    .print-friendly {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
 }
 
 /* 可访问性增强 */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* 高对比度模式支持 */
 @media (prefers-contrast: high) {
-  .btn-primary {
-    @apply border-2 border-white;
-  }
-  
-  .card {
-    @apply border-2 border-gray-600;
-  }
+    .btn-primary {
+        @apply border-2 border-white;
+    }
+
+    .card {
+        @apply border-2 border-gray-600;
+    }
 }

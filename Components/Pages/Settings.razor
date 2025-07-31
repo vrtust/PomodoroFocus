@@ -3,61 +3,188 @@
 @inject IThemeService ThemeService
 @inject IJSRuntime JSRuntime
 
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200 hover:shadow-lg">
-        <h3 class="text-4xl font-bold text-primary-600 mb-6 transition-colors duration-200">设置</h3>
+<div class="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- 页面标题 -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">设置</h1>
+            <p class="text-gray-600 dark:text-gray-300">自定义你的番茄钟体验</p>
+        </div>
 
         @if (settings != null)
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">番茄钟时长 (分钟):</label>
-                    <input type="number" @bind="settings.PomodoroDuration"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:shadow-md hover:border-blue-400" />
-                </div>
-                
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">OpenAI API Key:</label>
-                    <input type="password" @bind="settings.ApiKey" placeholder="sk-..."
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:shadow-md hover:border-blue-400" />
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                <!-- 设置卡片头部 -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6">
+                    <h2 class="text-2xl font-bold text-white">应用设置</h2>
+                    <p class="text-blue-100 mt-1">调整番茄钟和AI服务参数</p>
                 </div>
 
-                <div class="space-y-2 sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">API Base URL (可选):</label>
-                    <input type="text" @bind="settings.ApiBaseUrl" placeholder="例如 https://api.openai.com/v1"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:shadow-md hover:border-blue-400" />
-                </div>
+                <!-- 设置表单内容 -->
+                <div class="p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- 番茄钟设置 -->
+                        <div class="space-y-6">
+                            <div class="flex items-center mb-4">
+                                <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">番茄钟设置</h3>
+                            </div>
 
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">主题:</label>
-                    <select @bind="settings.Theme"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 hover:shadow-md hover:border-blue-400">
-                        <option value="System">跟随系统</option>
-                        <option value="Light">亮色模式</option>
-                        <option value="Dark">暗色模式</option>
-                    </select>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        番茄钟时长 <span class="text-gray-500 dark:text-gray-400">(分钟)</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" @bind="settings.PomodoroDuration" min="1" max="60"
+                                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">建议设置为25分钟</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI服务设置 -->
+                        <div class="space-y-6">
+                            <div class="flex items-center mb-4">
+                                <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">AI服务设置</h3>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">OpenAI API Key</label>
+                                    <div class="relative">
+                                        <input type="password" @bind="settings.ApiKey" placeholder="sk-..."
+                                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">用于生成活动摘要和分类</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">API Base URL <span class="text-gray-500 dark:text-gray-400">(可选)</span></label>
+                                    <div class="relative">
+                                        <input type="text" @bind="settings.ApiBaseUrl" placeholder="例如 https://api.openai.com/v1"
+                                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200" />
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 外观设置 -->
+                        <div class="space-y-6 md:col-span-2">
+                            <div class="flex items-center mb-4">
+                                <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">外观设置</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="cursor-pointer" @onclick="@(() => settings.Theme = "Light")">
+                                    <div class="border-2 rounded-xl p-4 transition-all duration-200 @(settings.Theme == "Light" ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600")">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 rounded-lg bg-white border border-gray-200 mb-3 flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium text-gray-800 dark:text-white">亮色模式</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cursor-pointer" @onclick="@(() => settings.Theme = "Dark")">
+                                    <div class="border-2 rounded-xl p-4 transition-all duration-200 @(settings.Theme == "Dark" ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600")">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 rounded-lg bg-gray-800 border border-gray-700 mb-3 flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium text-gray-800 dark:text-white">暗色模式</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cursor-pointer" @onclick="@(() => settings.Theme = "System")">
+                                    <div class="border-2 rounded-xl p-4 transition-all duration-200 @(settings.Theme == "System" ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600")">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-800 border border-gray-300 mb-3 flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium text-gray-800 dark:text-white">跟随系统</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 保存按钮区域 -->
+                    <div class="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            设置将在保存后立即生效
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            @if (showSaveConfirmation)
+                            {
+                                <div class="flex items-center text-green-600 dark:text-green-400 animate-pulse">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    已保存!
+                                </div>
+                            }
+                            <button @onclick="Save" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 active:scale-95 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                保存设置
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mt-6 flex items-center space-x-4">
-                <button @onclick="Save" class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-md shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95">
-                    保存设置
-                </button>
-                @if(showSaveConfirmation)
-                {
-                    <span class="text-green-600 dark:text-green-400 font-medium transition-all duration-200 animate-pulse">已保存!</span>
-                }
             </div>
         }
         else
         {
-            <div class="flex items-center justify-center py-8">
-                <div class="text-gray-600 dark:text-gray-400">正在加载设置...</div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12 text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+                <div class="text-gray-600 dark:text-gray-400 text-lg">正在加载设置...</div>
             </div>
         }
     </div>
 </div>
-
 
 @code {
     private AppSettings settings;
@@ -88,6 +215,7 @@
         await ThemeService.SetThemeAsync(settings.Theme, JSRuntime);
 
         showSaveConfirmation = true;
+        StateHasChanged();
         await Task.Delay(2000); // 显示 "已保存" 2秒钟
         showSaveConfirmation = false;
         StateHasChanged();

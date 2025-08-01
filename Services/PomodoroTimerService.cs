@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PomodoroFocus.Models;
+
 
 namespace PomodoroFocus.Services
 {
@@ -11,7 +8,7 @@ namespace PomodoroFocus.Services
     {
         private System.Timers.Timer _timer;
         private readonly ISettingsService _settingsService;
-        private int _initialMinutes;
+        private readonly IWindowActivationService _windowActivationService;
 
         private PomodoroSession _currentSession;
         private DateTime _phaseStartTime; // 用于计算实际时长
@@ -24,12 +21,14 @@ namespace PomodoroFocus.Services
         public event Action OnTick;
         public event Action<PomodoroSession, PomodoroCycleState> OnPhaseCompleted;
 
-        public PomodoroTimerService(ISettingsService settingsService)
+        public PomodoroTimerService(ISettingsService settingsService, IWindowActivationService windowActivationService = null)
         {
             // 文档建议：对于需要精确计时的UI应用，使用高分辨率的计时器。
             _timer = new System.Timers.Timer(1000); // 设置计时器间隔为1秒 (1000毫秒)
             _timer.Elapsed += OnTimerElapsed; // 订阅计时器的Elapsed事件
             _settingsService = settingsService;
+
+            _windowActivationService = windowActivationService;
 
             RestoreState();
         }
@@ -133,6 +132,8 @@ namespace PomodoroFocus.Services
             {
                 _currentSession.ActualBreakDurationMinutes = (int)Math.Round(elapsed.TotalMinutes);
             }
+
+            _windowActivationService?.ActivateMainWindow();
 
             await PersistStateAsync();
             // 触发阶段完成事件

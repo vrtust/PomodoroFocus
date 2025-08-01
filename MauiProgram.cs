@@ -35,6 +35,7 @@ namespace PomodoroFocus
 
 #if WINDOWS
             builder.Services.AddSingleton<IFloatingWindowService, WindowsFloatingWindowService>();
+            builder.Services.AddSingleton<IWindowActivationService, WindowsActivationService>();
 #endif
 
             // 构造 SQLite 数据库的完整路径

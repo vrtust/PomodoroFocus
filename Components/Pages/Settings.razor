@@ -3,14 +3,8 @@
 @inject IThemeService ThemeService
 @inject IJSRuntime JSRuntime
 
-<div class="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8 px-4">
+<div class="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
     <div class="max-w-4xl mx-auto">
-        <!-- 页面标题 -->
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">设置</h1>
-            <p class="text-gray-600 dark:text-gray-300">自定义你的番茄钟体验</p>
-        </div>
-
         @if (settings != null)
         {
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">

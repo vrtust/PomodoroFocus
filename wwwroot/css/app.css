@@ -381,3 +381,7 @@ button {
         @apply border-2 border-gray-600;
     }
 }
+
+input:focus {
+    outline: none;
+}

@@ -7,10 +7,9 @@
 @inject IFloatingWindowService FloatingWindowService
 @implements IDisposable
 
-<div class="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500">
-    <div class="container mx-auto max-w-4xl">
-        <div class="relative overflow-hidden rounded-3xl shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border border-white/20 dark:border-gray-700/50 transition-all duration-500 hover:shadow-2xl">
-
+<div class="flex flex-col items-center justify-start bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500 min-h-full gap-6 sm:gap-8">
+    <div class="w-full max-w-7xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
             <!-- 状态指示器 -->
             <div class="relative pt-10 px-6 flex justify-center">
                 <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 @(TimerService.CurrentCycleState == PomodoroCycleState.Work ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300")">
@@ -23,10 +22,12 @@
             </div>
 
             <!-- 计时器显示 -->
-            <div class="relative py-8 px-6 flex flex-col items-center justify-center">
-                <div class="relative mb-10">
+            @* 3. 使用 padding-y 来控制垂直间距，而不是固定的 py-8 *@
+            <div class="relative py-4 sm:py-6 px-6 flex flex-col items-center justify-center">
+                <div class="relative mb-6 sm:mb-8">
                     <!-- 环形进度条 -->
-                    <div class="relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80">
+                    @* 4. 核心改动：让圆环尺寸响应式 *@
+                    <div class="relative w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72">
                         <svg class="w-full h-full" viewBox="0 0 100 100">
                             <!-- 背景圆环 -->
                             <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="3" class="text-gray-200 dark:text-gray-700"></circle>
@@ -43,7 +44,8 @@
 
                         <!-- 计时器文本 -->
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold text-gray-800 dark:text-gray-100 mb-2 tracking-tight transition-all duration-300 @(TimerService.IsRunning && TimerService.CurrentCycleState == PomodoroCycleState.Work ? "animate-pulse-slow" : "")">
+                            @* 5. 让字体大小也响应式 *@
+                            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-800 dark:text-gray-100 mb-1 sm:mb-2 tracking-tight transition-all duration-300 @(TimerService.IsRunning && TimerService.CurrentCycleState == PomodoroCycleState.Work ? "animate-pulse-slow" : "")">
                                 @TimerService.TimeLeft.ToString("mm\\:ss")
                             </h1>
                             <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
@@ -61,7 +63,8 @@
                 </div>
 
                 <!-- 控制按钮 -->
-                <div class="flex flex-wrap justify-center gap-4 w-full max-w-md">
+                @* 6. 按钮组使用 flex-wrap 确保在小屏幕上能换行 *@
+                <div class="flex flex-wrap justify-center gap-3 sm:gap-4 w-full max-w-md">
                     @if (!TimerService.IsRunning)
                     {
                         <button class="flex-1 min-w-[120px] px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 active:scale-95 flex items-center justify-center" @onclick="StartTimer">
@@ -102,6 +105,58 @@
             </div>
         </div>
     </div>
+
+    @* --- 卡片 2: 全新的今日统计卡片 --- *@
+    <div class="w-full max-w-7xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+            <!-- 卡片头部 -->
+            <div class="p-4 sm:p-5 border-b border-white/10 dark:border-gray-700/50">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    今日统计
+                </h3>
+            </div>
+            <!-- 卡片内容 -->
+            <div class="p-4 sm:p-5">
+                @*
+                核心修改:
+                - 默认: grid-cols-1 (垂直堆叠)
+                - sm (640px) 及以上: grid-cols-3 (三列网格)
+            *@
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- 专注时长 -->
+                    <div class="text-center bg-white/10 dark:bg-black/10 p-4 rounded-xl">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">专注时长</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">
+                            @_todayTotalMinutes
+                            <span class="text-base font-medium text-gray-600 dark:text-gray-300">分钟</span>
+                        </p>
+                    </div>
+                    <!-- 完成会话 -->
+                    <div class="text-center bg-white/10 dark:bg-black/10 p-4 rounded-xl">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">完成会话</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-1">
+                            @_todaySessionCount
+                            <span class="text-base font-medium text-gray-600 dark:text-gray-300">次</span>
+                        </p>
+                    </div>
+                    <!-- 主要活动 -->
+                    @* 
+                    之前这里的 col-span-2 md:col-span-1 是为了解决小屏幕2列布局下的问题，
+                    现在默认是1列，sm以上是3列，这个复杂的跨列设置就不再需要了。
+                *@
+                    <div class="text-center bg-white/10 dark:bg-black/10 p-4 rounded-xl">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">主要活动</p>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-2 truncate" title="@_todayCategorySummary">
+                            @_todayCategorySummary
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <PomodoroLogModal IsVisible="isLogModalVisible"
@@ -113,10 +168,15 @@
     private PomodoroSession _sessionInProgress; // 用于暂存需要记录日志的会话
     private bool _isWidgetVisible = false;
 
-    protected override void OnInitialized()
+    private int _todayTotalMinutes = 0;
+    private int _todaySessionCount = 0;
+    private string _todayCategorySummary = "暂无记录";
+
+    protected override async Task OnInitializedAsync()
     {
         TimerService.OnTick += OnTimerTick;
         TimerService.OnPhaseCompleted += OnPhaseCompleted;
+        await LoadTodayStatsAsync();
     }
 
     private void StartTimer() => TimerService.Start();
@@ -154,6 +214,7 @@
             // 核心修正：仅在会话完全结束后，才进行数据库保存
             DbContext.Sessions.Add(_sessionInProgress);
             await DbContext.SaveChangesAsync();
+            await LoadTodayStatsAsync();
             TimerService.Reset(); // 重置计时器，准备下一个新会话
         }
         await InvokeAsync(StateHasChanged);
@@ -184,6 +245,42 @@
             FloatingWindowService.Show();
             _isWidgetVisible = true;
         }
+    }
+
+    private async Task LoadTodayStatsAsync()
+    {
+        var todayStart = DateTime.Now.Date;
+        var todayEnd = todayStart.AddDays(1).AddTicks(-1);
+
+        var todaySessions = await DbContext.Sessions
+            .Where(s => s.StartTime >= todayStart && s.EndTime <= todayEnd && s.ActualWorkDurationMinutes > 0)
+            .ToListAsync();
+
+        if (todaySessions.Any())
+        {
+            _todayTotalMinutes = todaySessions.Sum(s => s.ActualWorkDurationMinutes);
+            _todaySessionCount = todaySessions.Count;
+
+            var categoryCounts = todaySessions
+                .Where(s => !string.IsNullOrEmpty(s.ActivityCategory) && s.ActivityCategory != "未分类")
+                .GroupBy(s => s.ActivityCategory)
+                .Select(g => new { Category = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+
+            _todayCategorySummary = categoryCounts.Any()
+                ? string.Join(" / ", categoryCounts.Select(c => $"{c.Category} ({c.Count})"))
+                : "暂无分类记录";
+        }
+        else
+        {
+            // 如果今天没有记录，则重置统计数据
+            _todayTotalMinutes = 0;
+            _todaySessionCount = 0;
+            _todayCategorySummary = "暂无记录";
+        }
+
+        await InvokeAsync(StateHasChanged); // 确保UI更新
     }
 
     public void Dispose()

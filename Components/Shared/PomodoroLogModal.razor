@@ -1,4 +1,5 @@
 ﻿@inject ILLMService LlmService
+@inject AppDbContext DbContext
 @using System.Text.Json
 @using OpenAI.Chat
 
@@ -24,6 +25,23 @@
                         </svg>
                     </button>
                 </div>
+            </div>
+
+            @* --- 新增：上下文选择区域 --- *@
+            <div class="p-4 bg-gray-100 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">附加上下文:</label>
+                    <div class="flex items-center gap-2 rounded-lg bg-white dark:bg-gray-800 p-1 shadow-sm">
+                        <button @onclick="() => SelectContext(ContextDuration.None)" class="@GetContextButtonClass(ContextDuration.None)">无</button>
+                        <button @onclick="() => SelectContext(ContextDuration.LastDay)" class="@GetContextButtonClass(ContextDuration.LastDay)">1天</button>
+                        <button @onclick="() => SelectContext(ContextDuration.Last3Days)" class="@GetContextButtonClass(ContextDuration.Last3Days)">3天</button>
+                        <button @onclick="() => SelectContext(ContextDuration.Last7Days)" class="@GetContextButtonClass(ContextDuration.Last7Days)">7天</button>
+                    </div>
+                </div>
+                @if (_isContextLoading)
+                {
+                    <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-2 animate-pulse">正在加载历史对话...</p>
+                }
             </div>
 
             <!-- 对话内容区域 -->
@@ -159,6 +177,12 @@
     private bool isLoading = false;
     private string errorMessage = null;
 
+    public enum ContextDuration { None, LastDay, Last3Days, Last7Days }
+
+    private ContextDuration _selectedContext = ContextDuration.None;
+    private List<ChatMessage> _contextHistory = new(); // 存储从数据库加载的历史上下文
+    private bool _isContextLoading = false;
+
     private bool HasFailedMessage => conversationHistory.Any(m => !m.IsSent && !m.IsSending);
 
     protected override async Task OnParametersSetAsync()
@@ -193,12 +217,22 @@
         try
         {
             // 总是从完整的、未失败的历史中发送
-            var historyToSend = conversationHistory
+            var currentConversation = conversationHistory
                 .Where(ui => ui.IsSent || ui == messageToSend) // 只包括已发送成功的消息
                 .Select(ui => ui.Message)
                 .ToList();
 
-            var assistantResponse = await LlmService.GetNextResponseAsync(historyToSend);
+            var fullHistory = new List<ChatMessage>();
+            if (_contextHistory.Any())
+            {
+                // 添加一个系统消息来分隔历史和当前对话，这很重要！
+                fullHistory.Add(new SystemChatMessage("--- 以下是最近的对话历史作为参考 ---"));
+                fullHistory.AddRange(_contextHistory);
+                fullHistory.Add(new SystemChatMessage("--- 历史对话结束，以下是本次新的对话 ---"));
+            }
+            fullHistory.AddRange(currentConversation);
+
+            var assistantResponse = await LlmService.GetNextResponseAsync(fullHistory);
 
             // 成功！
             conversationHistory.Add(new UIMessage { Message = new AssistantChatMessage(assistantResponse), IsSent = true });
@@ -270,17 +304,34 @@
 
         try
         {
-            var cleanHistory = conversationHistory.Select(ui => ui.Message).ToList();
-            var simpleHistory = cleanHistory.Select(m => new SimpleChatMessage
+            var fullHistoryForSummary = new List<ChatMessage>();
+            if (_contextHistory.Any())
             {
-                Role = m switch { UserChatMessage => "User", AssistantChatMessage => "Assistant", _ => "Unknown" },
+                fullHistoryForSummary.Add(new SystemChatMessage("--- 以下是最近的对话历史作为参考 ---"));
+                fullHistoryForSummary.AddRange(_contextHistory);
+                fullHistoryForSummary.Add(new SystemChatMessage("--- 历史对话结束，以下是本次新的对话 ---"));
+            }
+            // 从 UIMessage 中提取当前对话的 ChatMessage
+            var currentConversationMessages = conversationHistory.Select(ui => ui.Message).ToList();
+            fullHistoryForSummary.AddRange(currentConversationMessages);
+
+            var result = await LlmService.SummarizeConversationAsync(fullHistoryForSummary);
+
+            var simpleHistoryToSave = currentConversationMessages.Select(m => new SimpleChatMessage
+            {
+                Role = m switch
+                {
+                    UserChatMessage => "User",
+                    AssistantChatMessage => "Assistant",
+                    SystemChatMessage => "System",
+                    _ => "Unknown"
+                },
                 Content = m.Content.FirstOrDefault()?.Text ?? string.Empty
             }).ToList();
 
-            var conversationJson = JsonSerializer.Serialize(simpleHistory);
-            var result = await LlmService.SummarizeConversationAsync(cleanHistory);
+            var conversationJsonToSave = JsonSerializer.Serialize(simpleHistoryToSave);
 
-            await OnComplete.InvokeAsync((result.Summary, result.Category, conversationJson));
+            await OnComplete.InvokeAsync((result.Summary, result.Category, conversationJsonToSave));
             await Close(); // 仅在成功时关闭模态框
         }
         catch (Exception ex)
@@ -292,6 +343,72 @@
             isLoading = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private string GetContextButtonClass(ContextDuration duration)
+    {
+        var baseClasses = "px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50";
+        if (_selectedContext == duration)
+        {
+            return $"{baseClasses} bg-green-500 text-white shadow";
+        }
+        return $"{baseClasses} bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600";
+    }
+
+    private async Task SelectContext(ContextDuration duration)
+    {
+        _selectedContext = duration;
+        _isContextLoading = true;
+        _contextHistory.Clear();
+        await InvokeAsync(StateHasChanged);
+
+        if (duration == ContextDuration.None)
+        {
+            _isContextLoading = false;
+            return;
+        }
+
+        var days = duration switch
+        {
+            ContextDuration.LastDay => 1,
+            ContextDuration.Last3Days => 3,
+            ContextDuration.Last7Days => 7,
+            _ => 0
+        };
+
+        var startDate = DateTime.Now.Date.AddDays(-days);
+
+        var pastSessions = await DbContext.Sessions
+            .Where(s => s.StartTime >= startDate && !string.IsNullOrEmpty(s.UserInput))
+            .OrderBy(s => s.StartTime)
+            .ToListAsync();
+
+        foreach (var session in pastSessions)
+        {
+            try
+            {
+                // 复用我们之前在 ConversationHistoryModal 中的 DTO 逻辑
+                var simpleHistory = JsonSerializer.Deserialize<List<SimpleChatMessage>>(session.UserInput);
+                if (simpleHistory != null)
+                {
+                    foreach (var msg in simpleHistory)
+                    {
+                        // 将 SimpleChatMessage 转换回 ChatMessage
+                        ChatMessage chatMsg = msg.Role switch
+                        {
+                            "User" => new UserChatMessage(msg.Content),
+                            "Assistant" => new AssistantChatMessage(msg.Content),
+                            _ => null
+                        };
+                        if (chatMsg != null) _contextHistory.Add(chatMsg);
+                    }
+                }
+            }
+            catch { /* 忽略无法解析的旧记录 */ }
+        }
+
+        _isContextLoading = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task Close()

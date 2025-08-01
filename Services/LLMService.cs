@@ -1,6 +1,5 @@
 ﻿using OpenAI;
 using OpenAI.Chat;
-using PomodoroFocus.Models;
 using System.ClientModel;
 using System.Text.Json;
 
@@ -74,7 +73,7 @@ public class LLMService : ILLMService
 
     public async Task<(string Summary, string Category)> SummarizeConversationAsync(List<ChatMessage> history)
     {
-        if(history.Count == 1)
+        if (history.Count == 1)
         {
             return ("在该番茄钟完成后并未进行任何对话", "");
         }

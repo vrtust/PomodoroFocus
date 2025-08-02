@@ -21,6 +21,15 @@ PomodoroFocus 正是为了解决这些问题而生。它将番茄钟、时间记
 
 我们的目标是：用最少的精力，换取最高质量的反思与记录。
 
+## 截图
+![./images/home1.png](./images/home1.png)
+![./images/home2.png](./images/home2.png)
+![./images/home3.png](./images/home3.png)
+![./images/home4.png](./images/home4.png)
+![./images/setting.png](./images/setting.png)
+![./images/history1.png](./images/history1.png)
+![./images/history2.png](./images/history2.png)
+
 ## 已实现功能
 
 - [X] 可自定义时长的专注

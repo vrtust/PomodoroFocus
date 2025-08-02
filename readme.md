@@ -58,16 +58,15 @@ PomodoroFocus 正是为了解决这些问题而生。它将番茄钟、时间记
 3. 在设置界面设置自己的 OpenAI API Key 和 API Base URL，点击 “保存设置”
 4. 在首页界面开始第一个番茄钟
 5. 在历史记录界面查看自己的历史记录，随便点击一个查看当时的对话
-6. 所有本地文件（设置、历史记录）位于`%LocalAppData%\User Name\com.companyname.pomodorofocus\Data`
+6. 所有本地文件（设置、历史记录）位于 `%LocalAppData%\User Name\com.companyname.pomodorofocus\Data`
 
 ## 给开发者
 
 如果你想自行编译或修改代码：
 
 1. 克隆本仓库: `git clone https://github.com/vrtust/PomodoroFocus.git`
-2. 使用 Visual Studio 2022 (及以上版本) 打开 `PomodoroFocus.sln`。
-3. 确保已安装 .NET MAUI 工作负载。
-4. 编译并运行项目。
+2. 使用 Visual Studio 2022 (及以上版本) 打开 `PomodoroFocus.sln`
+3. 确保已安装 .NET MAUI
+4. 编译并运行项目
 
-
-本项目几乎全是由LLM完成，所以如果你也对这种开发方式感兴趣，可以看看我在写这个项目时候的些许经验，[在这里](./碎碎念.md)
+如果你感兴趣，可以看看我在写这个项目时候的些许经验，[在这里](./碎碎念.md)

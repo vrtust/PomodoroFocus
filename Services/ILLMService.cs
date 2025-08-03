@@ -7,5 +7,6 @@ namespace PomodoroFocus.Services
         Task<string> GetInitialPromptAsync();
         Task<string> GetNextResponseAsync(List<ChatMessage> history);
         Task<(string Summary, string Category)> SummarizeConversationAsync(List<ChatMessage> history);
+        Task<List<string>> GetAvailableModelsAsync();
     }
 }

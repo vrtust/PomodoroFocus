@@ -189,6 +189,7 @@
 @if (_isHistoryModalVisible)
 {
     <ConversationHistoryModal ConversationJson="@_selectedConversationJson"
+                              Summary="@_selectedSession.LLMSummary"
                               OnClose="() => _isHistoryModalVisible = false" />
 }
 
@@ -206,6 +207,7 @@
     private string _viewTitle;
     private bool _isDataLoaded = false;
 
+    private PomodoroSession _selectedSession;
     private bool _isHistoryModalVisible = false;
     private string _selectedConversationJson;
 
@@ -342,6 +344,7 @@
 
     private void ShowConversationDetails(PomodoroSession session)
     {
+        _selectedSession = session;
         _selectedConversationJson = string.IsNullOrWhiteSpace(session.UserInput) ? "[]" : session.UserInput;
         _isHistoryModalVisible = true;
         StateHasChanged(); // 确保UI在非async方法中也能更新

@@ -2,6 +2,7 @@
 @inject ISettingsService SettingsService
 @inject IThemeService ThemeService
 @inject IJSRuntime JSRuntime
+@inject ILLMService LlmService
 
 <div class="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
     <div class="max-w-7xl mx-auto">
@@ -84,6 +85,56 @@
                                             </svg>
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- 模型选择下拉菜单 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AI模型</label>
+
+                                    <!-- 如果有错误则显示错误信息 -->
+                                    @if (!string.IsNullOrEmpty(_modelLoadingError))
+                                    {
+                                        <div class="mb-2 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-700 dark:text-red-300">
+                                            @_modelLoadingError
+                                        </div>
+                                    }
+
+                                    <!-- 这个'relative'容器是定位箭头图标的关键 -->
+                                    <div class="relative">
+                                        <select @bind="settings.ModelId" disabled="@_loadingModels"
+                                                class="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 appearance-none disabled:opacity-50">
+                                            @if (_loadingModels)
+                                            {
+                                                <option>加载模型中...</option>
+                                            }
+                                            else if (_availableModels.Any())
+                                            {
+                                                <!-- 如果当前保存的模型不在新列表中，将其添加为第一个选项 -->
+                                                @if (!string.IsNullOrEmpty(settings.ModelId) && !_availableModels.Contains(settings.ModelId))
+                                                {
+                                                    <option value="@settings.ModelId">@settings.ModelId (自定义)</option>
+                                                }
+
+                                                foreach (var model in _availableModels)
+                                                {
+                                                    <option value="@model">@model</option>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <!-- 如果列表为空则显示回退（例如由于错误） -->
+                                                <option value="@settings.ModelId">@settings.ModelId (无法获取列表)</option>
+                                            }
+                                        </select>
+
+                                        <!-- 这是自定义箭头图标覆盖层 -->
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 pointer-events-none">
+                                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.5 9.78a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">选择用于对话和摘要的语言模型。</p>
                                 </div>
                             </div>
                         </div>
@@ -223,7 +274,11 @@
     private AppSettings settings;
     private bool showSaveConfirmation = false;
 
-    protected override void OnInitialized()
+    private List<string> _availableModels = new List<string>();
+    private bool _loadingModels = true;
+    private string _modelLoadingError = null;
+
+    protected override async Task OnInitializedAsync()
     {
         // 创建一个副本进行编辑，以避免在保存前修改全局状态
         settings = new AppSettings
@@ -231,8 +286,30 @@
             PomodoroDuration = SettingsService.CurrentSettings.PomodoroDuration,
             ApiKey = SettingsService.CurrentSettings.ApiKey,
             ApiBaseUrl = SettingsService.CurrentSettings.ApiBaseUrl,
-            Theme = SettingsService.CurrentSettings.Theme
+            Theme = SettingsService.CurrentSettings.Theme,
+            ModelId = SettingsService.CurrentSettings.ModelId,
+            ConversationSystemPrompt = SettingsService.CurrentSettings.ConversationSystemPrompt,
+            SummarizationSystemPrompt = SettingsService.CurrentSettings.SummarizationSystemPrompt,
+            ContextSeparatorPrompt = SettingsService.CurrentSettings.ContextSeparatorPrompt,
+            EndContextSeparatorPrompt = SettingsService.CurrentSettings.EndContextSeparatorPrompt
         };
+
+        try
+        {
+            _availableModels = await LlmService.GetAvailableModelsAsync();
+        }
+        catch (Exception ex)
+        {
+            // 捕获到错误！存储信息
+            _modelLoadingError = $"加载模型失败：{ex.Message}";
+            _availableModels = new List<string>(); // 确保列表为空
+        }
+        finally
+        {
+            // 无论是否有错误都会执行
+            _loadingModels = false;
+            StateHasChanged();
+        }
     }
 
     private async Task Save()
@@ -242,6 +319,11 @@
         SettingsService.CurrentSettings.ApiKey = settings.ApiKey;
         SettingsService.CurrentSettings.ApiBaseUrl = settings.ApiBaseUrl;
         SettingsService.CurrentSettings.Theme = settings.Theme;
+        SettingsService.CurrentSettings.ModelId = settings.ModelId;
+        SettingsService.CurrentSettings.ConversationSystemPrompt = settings.ConversationSystemPrompt;
+        SettingsService.CurrentSettings.SummarizationSystemPrompt = settings.SummarizationSystemPrompt;
+        SettingsService.CurrentSettings.ContextSeparatorPrompt = settings.ContextSeparatorPrompt;
+        SettingsService.CurrentSettings.EndContextSeparatorPrompt = settings.EndContextSeparatorPrompt;
 
         await SettingsService.SaveSettingsAsync();
 

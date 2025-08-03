@@ -87,11 +87,10 @@
                                     </div>
                                 </div>
 
-                                <!-- 模型选择下拉菜单 -->
+                                <!-- 模型选择 -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AI模型</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AI 模型</label>
 
-                                    <!-- 如果有错误则显示错误信息 -->
                                     @if (!string.IsNullOrEmpty(_modelLoadingError))
                                     {
                                         <div class="mb-2 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-700 dark:text-red-300">
@@ -99,42 +98,54 @@
                                         </div>
                                     }
 
-                                    <!-- 这个'relative'容器是定位箭头图标的关键 -->
-                                    <div class="relative">
-                                        <select @bind="settings.ModelId" disabled="@_loadingModels"
-                                                class="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 appearance-none disabled:opacity-50">
+                                    <!-- 下拉框和刷新按钮的容器 -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-grow">
+                                            <select @bind="settings.ModelId"
+                                                    disabled="@_loadingModels"
+                                                    class="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 appearance-none disabled:opacity-50">
+
+                                                <!-- 选项1：始终显示当前选中的模型 -->
+                                                <option value="@settings.ModelId">@settings.ModelId</option>
+
+                                                <!-- 选项2：显示其他可用模型，排除已显示的模型 -->
+                                                @if (_availableModels.Any())
+                                                {
+                                                    foreach (var model in _availableModels.Where(m => m != settings.ModelId))
+                                                    {
+                                                        <option value="@model">@model</option>
+                                                    }
+                                                }
+                                            </select>
+
+                                            <!-- 自定义箭头图标 -->
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 pointer-events-none">
+                                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.5 9.78a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <!-- 刷新按钮 -->
+                                        <button @onclick="LoadModelsAsync" disabled="@_loadingModels" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-wait transition-colors">
                                             @if (_loadingModels)
                                             {
-                                                <option>加载模型中...</option>
-                                            }
-                                            else if (_availableModels.Any())
-                                            {
-                                                <!-- 如果当前保存的模型不在新列表中，将其添加为第一个选项 -->
-                                                @if (!string.IsNullOrEmpty(settings.ModelId) && !_availableModels.Contains(settings.ModelId))
-                                                {
-                                                    <option value="@settings.ModelId">@settings.ModelId (自定义)</option>
-                                                }
-
-                                                foreach (var model in _availableModels)
-                                                {
-                                                    <option value="@model">@model</option>
-                                                }
+                                                <!-- 加载动画SVG -->
+                                                <svg class="animate-spin h-5 w-5 text-gray-700 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
                                             }
                                             else
                                             {
-                                                <!-- 如果列表为空则显示回退（例如由于错误） -->
-                                                <option value="@settings.ModelId">@settings.ModelId (无法获取列表)</option>
+                                                <!-- 刷新图标SVG -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                                </svg>
                                             }
-                                        </select>
-
-                                        <!-- 这是自定义箭头图标覆盖层 -->
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 pointer-events-none">
-                                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.5 9.78a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
+                                        </button>
                                     </div>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">选择用于对话和摘要的语言模型。</p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">点击右侧刷新按钮更新模型列表。</p>
                                 </div>
                             </div>
                         </div>
@@ -275,8 +286,12 @@
     private bool showSaveConfirmation = false;
 
     private List<string> _availableModels = new List<string>();
-    private bool _loadingModels = true;
-    private string _modelLoadingError = null;
+    private bool _loadingModels = false;
+    private string _modelLoadingError = string.Empty;
+
+    private bool _modelsFetched = false;
+    private string _cachedApiKey = string.Empty;
+    private string _cachedApiBaseUrl = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -293,22 +308,64 @@
             ContextSeparatorPrompt = SettingsService.CurrentSettings.ContextSeparatorPrompt,
             EndContextSeparatorPrompt = SettingsService.CurrentSettings.EndContextSeparatorPrompt
         };
+    }
+
+    private async Task LoadModelsAsync()
+    {
+        // 如果正在加载则不执行任何操作
+        if (_loadingModels)
+        {
+            return;
+        }
+
+        // 失效检查：如果API密钥或URL自上次获取后已更改，则重新获取
+        if (_modelsFetched &&
+            settings.ApiKey == _cachedApiKey &&
+            settings.ApiBaseUrl == _cachedApiBaseUrl)
+        {
+            // 数据是最新的，无需重新获取
+            return;
+        }
+
+        _loadingModels = true;
+        _modelLoadingError = string.Empty;
+        await InvokeAsync(StateHasChanged);
+
+        // 我们需要临时更新服务的设置，以便API调用使用输入框中*未保存*的值
+        var originalApiKey = SettingsService.CurrentSettings.ApiKey;
+        var originalApiBaseUrl = SettingsService.CurrentSettings.ApiBaseUrl;
+        SettingsService.CurrentSettings.ApiKey = settings.ApiKey;
+        SettingsService.CurrentSettings.ApiBaseUrl = settings.ApiBaseUrl;
 
         try
         {
             _availableModels = await LlmService.GetAvailableModelsAsync();
+            if (_availableModels.Any())
+            {
+                _modelsFetched = true;
+                // 缓存本次成功获取使用的凭证
+                _cachedApiKey = settings.ApiKey;
+                _cachedApiBaseUrl = settings.ApiBaseUrl;
+            }
+            else
+            {
+                _modelLoadingError = "未能获取到模型列表，请检查API Key和网络连接。";
+            }
         }
         catch (Exception ex)
         {
-            // 捕获到错误！存储信息
-            _modelLoadingError = $"加载模型失败：{ex.Message}";
-            _availableModels = new List<string>(); // 确保列表为空
+            _modelLoadingError = $"获取模型失败: {ex.Message}";
+            _availableModels.Clear();
+            _modelsFetched = false; // 获取失败，允许再次尝试
         }
         finally
         {
-            // 无论是否有错误都会执行
+            // 恢复服务中的原始设置
+            SettingsService.CurrentSettings.ApiKey = originalApiKey;
+            SettingsService.CurrentSettings.ApiBaseUrl = originalApiBaseUrl;
+
             _loadingModels = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 

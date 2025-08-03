@@ -1,6 +1,6 @@
 ﻿@inject ILLMService LlmService
 @inject AppDbContext DbContext
-@using System.Text.Json
+@inject ISettingsService SettingsService
 @using OpenAI.Chat
 
 @if (IsVisible)
@@ -226,9 +226,9 @@
             if (_contextHistory.Any())
             {
                 // 添加一个系统消息来分隔历史和当前对话，这很重要！
-                fullHistory.Add(new SystemChatMessage("--- 以下是最近的对话历史作为参考 ---"));
+                fullHistory.Add(new SystemChatMessage(SettingsService.CurrentSettings.ContextSeparatorPrompt));
                 fullHistory.AddRange(_contextHistory);
-                fullHistory.Add(new SystemChatMessage("--- 历史对话结束，以下是本次新的对话 ---"));
+                fullHistory.Add(new SystemChatMessage(SettingsService.CurrentSettings.EndContextSeparatorPrompt));
             }
             fullHistory.AddRange(currentConversation);
 
@@ -307,9 +307,9 @@
             var fullHistoryForSummary = new List<ChatMessage>();
             if (_contextHistory.Any())
             {
-                fullHistoryForSummary.Add(new SystemChatMessage("--- 以下是最近的对话历史作为参考 ---"));
+                fullHistoryForSummary.Add(new SystemChatMessage(SettingsService.CurrentSettings.ContextSeparatorPrompt));
                 fullHistoryForSummary.AddRange(_contextHistory);
-                fullHistoryForSummary.Add(new SystemChatMessage("--- 历史对话结束，以下是本次新的对话 ---"));
+                fullHistoryForSummary.Add(new SystemChatMessage(SettingsService.CurrentSettings.EndContextSeparatorPrompt));
             }
             // 从 UIMessage 中提取当前对话的 ChatMessage
             var currentConversationMessages = conversationHistory.Select(ui => ui.Message).ToList();

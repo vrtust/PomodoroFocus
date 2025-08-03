@@ -26,7 +26,8 @@ PomodoroFocus 正是为了解决这些问题而生。它将番茄钟、时间记
 ![./images/home2.png](./images/home2.png)
 ![./images/home3.png](./images/home3.png)
 ![./images/home4.png](./images/home4.png)
-![./images/setting.png](./images/setting.png)
+![./images/settings1.png](./images/settings1.png)
+![./images/settings2.png](./images/settings2.png)
 ![./images/history1.png](./images/history1.png)
 ![./images/history2.png](./images/history2.png)
 

@@ -70,6 +70,8 @@ PomodoroFocus 正是为了解决这些问题而生。它将番茄钟、时间记
 5. 在历史记录界面查看自己的历史记录，随便点击一个查看当时的对话
 6. 所有本地文件（设置、历史记录）位于 `%LocalAppData%\User Name\com.companyname.pomodorofocus\Data`
 
+release 中的压缩包是直接压缩了 debug 模式的文件夹，没有打包为 MSIX，如果有需要可以提 issue 或者自行打包
+
 ## 给开发者
 
 如果你想自行编译或修改代码：

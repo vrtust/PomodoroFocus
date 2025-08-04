@@ -158,7 +158,8 @@
                                     @* 优化时间显示样式 *@
                                     <span class="text-xs text-gray-500 dark:text-gray-400 
                                                  font-medium leading-relaxed tracking-tight">
-                                        @session.StartTime.ToString("yyyy-MM-dd HH:mm")
+                                        @session.StartTime.ToString("HH:mm") - @session.EndTime.ToString("HH:mm")
+                                        <div class="text-right text-gray-400 dark:text-gray-500">@session.StartTime.ToString("yyyy-MM-dd")</div>
                                     </span>
                                 </div>
                             <div class="mb-4">

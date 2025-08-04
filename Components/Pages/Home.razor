@@ -160,7 +160,7 @@
 </div>
 
 <PomodoroLogModal IsVisible="isLogModalVisible"
-                  OnClose="@(() => isLogModalVisible = false)"
+                  OnClose="HandleModalClose"
                   OnComplete="HandleLogCompletion" />
 
 @code {
@@ -176,7 +176,17 @@
     {
         TimerService.OnTick += OnTimerTick;
         TimerService.OnPhaseCompleted += OnPhaseCompleted;
+        TimerService.OnLogModalStateChanged += OnLogModalStateChanged;
+        isLogModalVisible = TimerService.IsLogModalPending;
+
         await LoadTodayStatsAsync();
+    }
+
+    private void OnLogModalStateChanged()
+    {
+        // 服务是唯一真实来源。更新本地状态和UI
+        isLogModalVisible = TimerService.IsLogModalPending;
+        InvokeAsync(StateHasChanged);
     }
 
     private void StartTimer() => TimerService.Start();
@@ -202,12 +212,7 @@
     private async void OnPhaseCompleted(PomodoroSession session, PomodoroCycleState completedState)
     {
         _sessionInProgress = session; // 始终用服务传来的最新会话状态更新本地副本
-        if (completedState == PomodoroCycleState.Work)
-        {
-            // 工作阶段结束，弹出日志记录窗口
-            isLogModalVisible = true;
-        }
-        else // 休息阶段结束
+        if (completedState != PomodoroCycleState.Work)
         {
             // 会话彻底完成
             _sessionInProgress.EndTime = DateTime.Now;
@@ -220,6 +225,11 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private void HandleModalClose()
+    {
+        TimerService.AcknowledgeLogModal(); // 通知服务我们已关闭模态框
+    }
+
     private void HandleLogCompletion((string Summary, string Category, string FullConversation) result)
     {
         if (_sessionInProgress != null)
@@ -229,6 +239,7 @@
             _sessionInProgress.UserInput = result.FullConversation;
         }
         isLogModalVisible = false;
+        TimerService.AcknowledgeLogModal();
         // 明确指令：开始下一阶段（休息）
         TimerService.BeginNextPhase();
     }
@@ -287,5 +298,6 @@
     {
         TimerService.OnTick -= OnTimerTick;
         TimerService.OnPhaseCompleted -= OnPhaseCompleted;
+        TimerService.OnLogModalStateChanged -= OnLogModalStateChanged;
     }
 }

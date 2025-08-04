@@ -7,14 +7,17 @@ namespace PomodoroFocus.Services
         TimeSpan TimeLeft { get; }
         bool IsRunning { get; }
         PomodoroCycleState CurrentCycleState { get; }
+        bool IsLogModalPending { get; }
 
         event Action OnTick;
         event Action<PomodoroSession, PomodoroCycleState> OnPhaseCompleted;
+        event Action OnLogModalStateChanged;
 
         void Start();
         void Pause();
         void Reset();
         void EndPhaseEarly();
         void BeginNextPhase();
+        void AcknowledgeLogModal();
     }
 }

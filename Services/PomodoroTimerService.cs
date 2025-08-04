@@ -16,9 +16,11 @@ namespace PomodoroFocus.Services
         public TimeSpan TimeLeft { get; private set; }
         public bool IsRunning { get; private set; }
         public PomodoroCycleState CurrentCycleState { get; private set; }
+        public bool IsLogModalPending { get; private set; }
 
         public event Action OnTick;
         public event Action<PomodoroSession, PomodoroCycleState> OnPhaseCompleted;
+        public event Action OnLogModalStateChanged;
 
         public PomodoroTimerService(ISettingsService settingsService, IWindowActivationService windowActivationService = null)
         {
@@ -132,11 +134,26 @@ namespace PomodoroFocus.Services
                 _currentSession.ActualBreakDurationMinutes = (int)Math.Round(elapsed.TotalMinutes);
             }
 
+            if (completedState == PomodoroCycleState.Work)
+            {
+                IsLogModalPending = true;
+                OnLogModalStateChanged?.Invoke(); // 通知UI
+            }
+
             _windowActivationService?.ActivateMainWindow();
 
             await PersistStateAsync();
             // 触发阶段完成事件
             OnPhaseCompleted?.Invoke(_currentSession, completedState);
+        }
+
+        public void AcknowledgeLogModal()
+        {
+            if (IsLogModalPending)
+            {
+                IsLogModalPending = false;
+                OnLogModalStateChanged?.Invoke();
+            }
         }
 
         public async void Start()

@@ -57,13 +57,14 @@ namespace PomodoroFocus.Services
                 var elapsed = DateTime.Now - settings.PhaseStartTime;
                 if (elapsed < totalDuration)
                 {
+                    _phaseStartTime = settings.PhaseStartTime;
                     TimeLeft = totalDuration - elapsed;
                     IsRunning = true;
                     _timer.Start();
                 }
                 else // 应用关闭期间，计时已结束
                 {
-                    CompletePhase(false);
+                    CompletePhase(false, settings.PhaseStartTime);
                 }
             }
             else // Paused
@@ -111,17 +112,17 @@ namespace PomodoroFocus.Services
 
             if (TimeLeft.TotalSeconds <= 0)
             {
-                CompletePhase(false); // isEndedEarly = false
+                CompletePhase(false, _phaseStartTime); // isEndedEarly = false
             }
         }
 
-        private async Task CompletePhase(bool isEndedEarly)
+        private async Task CompletePhase(bool isEndedEarly, DateTime phaseStartTime)
         {
             _timer.Stop();
             IsRunning = false;
             _currentState = TimerCurrentState.Stopped;
 
-            var elapsed = DateTime.Now - _phaseStartTime;
+            var elapsed = DateTime.Now - phaseStartTime;
             var completedState = this.CurrentCycleState;
 
             // 记录实际时长
@@ -229,7 +230,7 @@ namespace PomodoroFocus.Services
         public async void EndPhaseEarly()
         {
             if (!IsRunning) return;
-            await CompletePhase(true); // isEndedEarly = true
+            await CompletePhase(true, _phaseStartTime); // isEndedEarly = true
         }
 
         private int GetPhaseDuration()

@@ -4,5 +4,6 @@
     {
         void Show();
         void Hide();
+        event Action OnWindowClosed;
     }
 }

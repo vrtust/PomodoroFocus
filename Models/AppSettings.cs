@@ -24,5 +24,8 @@
         public string SummarizationSystemPrompt { get; set; } = "分析以下对话。你的任务是：1. 提供一段简洁的、一段话的总结，说明用户完成了什么。2. 将主要活动归类为以下类别之一：[编码, 调试, 研究, 文档, 会议, 讨论, 计划, 休息]。你的输出必须是一个单一、有效的 JSON 对象，包含两个键：\"summary\" 和 \"category\"。不要包含任何其他文本或格式。";
         public string ContextSeparatorPrompt { get; set; } = "--- 以下是最近的对话历史作为参考 ---";
         public string EndContextSeparatorPrompt { get; set; } = "--- 历史对话结束，以下是本次新的对话 ---";
+
+        public int WidgetWidth { get; set; } = 260;
+        public int WidgetHeight { get; set; } = 180;
     }
 }

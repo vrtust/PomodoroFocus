@@ -180,6 +180,16 @@
         isLogModalVisible = TimerService.IsLogModalPending;
 
         await LoadTodayStatsAsync();
+
+        FloatingWindowService.OnWindowClosed += OnWidgetWindowClosed;
+    }
+
+    private void OnWidgetWindowClosed()
+    {
+        // 更新状态为关闭
+        _isWidgetVisible = false;
+        // 强制刷新 UI (因为这个事件是从非 UI 线程触发的)
+        InvokeAsync(StateHasChanged);
     }
 
     private void OnLogModalStateChanged()
@@ -299,5 +309,7 @@
         TimerService.OnTick -= OnTimerTick;
         TimerService.OnPhaseCompleted -= OnPhaseCompleted;
         TimerService.OnLogModalStateChanged -= OnLogModalStateChanged;
+
+        FloatingWindowService.OnWindowClosed -= OnWidgetWindowClosed;
     }
 }

@@ -1,0 +1,11 @@
+# Add patterns to ignore here, one per line
+# Example:
+# *.log
+# tmp/
+.vs/
+bin/
+images/
+obj/
+Resources/
+wwwroot/css/bootstrap/
+LICENSE.txt

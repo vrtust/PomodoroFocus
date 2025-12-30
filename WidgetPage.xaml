@@ -2,10 +2,141 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PomodoroFocus.WidgetPage"
-             BackgroundColor="Transparent">
-    <VerticalStackLayout Padding="10" Spacing="5">
-        <Label x:Name="PhaseLabel" Text="工作" HorizontalOptions="Center" />
-        <Label x:Name="TimeLabel" Text="25:00" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold"/>
-        <Button x:Name="PlayPauseButton" Text="暂停" Clicked="PlayPauseButton_Clicked" HeightRequest="40" />
-    </VerticalStackLayout>
+             BackgroundColor="Transparent"
+             x:Name="ThisPage">
+    <!-- 给页面命名，方便引用 -->
+
+    <ContentPage.Resources>
+        <!-- 保持之前的颜色资源不变 -->
+        <Color x:Key="Gray900">#111827</Color>
+        <Color x:Key="Gray800">#1f2937</Color>
+        <Color x:Key="Gray50">#f9fafb</Color>
+        <Color x:Key="White">#ffffff</Color>
+
+        <Color x:Key="Indigo500">#6366f1</Color>
+        <Color x:Key="Indigo600">#4f46e5</Color>
+
+        <Color x:Key="Green100">#dcfce7</Color>
+        <Color x:Key="Green800">#166534</Color>
+        <Color x:Key="Green500">#22c55e</Color>
+
+        <Color x:Key="Red100">#fee2e2</Color>
+        <Color x:Key="Red800">#991b1b</Color>
+        <Color x:Key="Red500">#ef4444</Color>
+
+        <!-- 按钮样式：使用 ViewBox 确保图标在按钮内缩放 -->
+        <Style x:Key="ActionIconBorder" TargetType="Border">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="StrokeShape" Value="RoundRectangle 10"/>
+            <!-- 稍微加大圆角 -->
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+            <!-- 移除固定的 Height/WidthRequest，改用 Grid 或比例 -->
+        </Style>
+    </ContentPage.Resources>
+
+    <Border StrokeThickness="0"
+            StrokeShape="RoundRectangle 16"
+            Margin="0">
+
+        <Border.Shadow>
+            <Shadow Brush="Black" Offset="0,4" Radius="10" Opacity="0.3"/>
+        </Border.Shadow>
+
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}" Offset="0.0"/>
+                <GradientStop Color="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray800}}" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Border.Background>
+
+        <!-- 
+           响应式布局核心：Grid 
+           Row 0 (Auto): 顶部状态条，只占用所需空间
+           Row 1 (*):    计时器，占用剩余所有空间，并居中
+           Row 2 (Auto): 底部按钮，只占用所需空间
+        -->
+        <Grid RowDefinitions="Auto,*,Auto" 
+              Padding="12,8"
+              x:Name="MainGrid">
+            <!-- 给 Grid 命名 -->
+
+            <!-- 1. 顶部状态 -->
+            <Border x:Name="StatusBadge"
+                    Grid.Row="0"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Start"
+                    StrokeShape="RoundRectangle 12"
+                    StrokeThickness="0"
+                    Padding="10,4"
+                    Margin="0,4,0,0">
+                <!-- 加一点上边距 -->
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <BoxView x:Name="StatusDot"
+                             HeightRequest="8" WidthRequest="8" 
+                             CornerRadius="4"
+                             VerticalOptions="Center"/>
+                    <Label x:Name="PhaseLabel" 
+                           Text="专注时间" 
+                           FontSize="11" 
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- 2. 计时器文字 -->
+            <!-- 移除固定的 FontSize，稍后在代码中动态设置 -->
+            <Label x:Name="TimeLabel" 
+                   Grid.Row="1"
+                   Text="25:00" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   TextColor="{AppThemeBinding Light=#1f2937, Dark=#f3f4f6}"
+                   FontFamily="OpenSansRegular"/>
+
+            <!-- 3. 控制按钮组 -->
+            <Grid Grid.Row="2" 
+                  ColumnDefinitions="*,*" 
+                  ColumnSpacing="15" 
+                  HorizontalOptions="Center"
+                  WidthRequest="120" 
+                  Margin="0,0,0,4">
+                <!-- 限制按钮组宽度，并在底部留白 -->
+
+                <!-- 播放/暂停 -->
+                <Border Grid.Column="0"
+                        Style="{StaticResource ActionIconBorder}"
+                        HeightRequest="36" WidthRequest="36"
+                        BackgroundColor="{AppThemeBinding Light=#eff6ff, Dark=#1e1b4b}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="PlayPauseButton_Clicked"/>
+                    </Border.GestureRecognizers>
+                    <Path x:Name="PlayPauseIcon"
+                          Aspect="Uniform"
+                          Fill="{AppThemeBinding Light={StaticResource Indigo600}, Dark={StaticResource Indigo500}}"
+                          HeightRequest="14" WidthRequest="14"
+                          HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+
+                <!-- 结束 -->
+                <Border Grid.Column="1"
+                        Style="{StaticResource ActionIconBorder}"
+                        HeightRequest="36" WidthRequest="36"
+                        BackgroundColor="{AppThemeBinding Light=#fef2f2, Dark=#450a0a}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="StopButton_Clicked"/>
+                    </Border.GestureRecognizers>
+                    <Path Aspect="Uniform"
+                          Fill="{AppThemeBinding Light={StaticResource Red500}, Dark={StaticResource Red500}}"
+                          Data="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
+                          HeightRequest="14" WidthRequest="14"
+                          HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
 </ContentPage>
